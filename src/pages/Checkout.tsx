@@ -1,46 +1,56 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUser } from '../contexts/UserContext';
-import { useCart } from '../hooks';
-import { createOrder } from '../utils/api';
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../contexts/UserContext";
+import { useCart } from "../hooks";
+import { createOrder } from "../utils/api";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { CreateOrderRequest, OrderItem } from '../types/types';
-import Navbar from './Navbar';
-import { useWallets } from '@privy-io/react-auth';
-import { approveUSDCSpending, createOrderOnChain, convertToWei } from '../utils/contractInteraction';
-import { useExchangeRate } from '../hooks/useExchangeRate';
+import { CreateOrderRequest, OrderItem } from "../types/types";
+import Navbar from "./Navbar";
+import { useWallets } from "@privy-io/react-auth";
+import {
+  approveUSDCSpending,
+  createOrderOnChain,
+  convertToWei,
+} from "../utils/contractInteraction";
+import { useExchangeRate } from "../hooks/useExchangeRate";
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { userData } = useUser();
-  const { data: cart, isLoading, refetch } = useCart(userData?.privy_id || '');
-  const { data: exchangeRate, isLoading: isLoadingExchangeRate } = useExchangeRate();
-  const [fullName, setFullName] = useState('');
-  const [street, setStreet] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [phone, setPhone] = useState('');
-  const [deliveryInstructions, setDeliveryInstructions] = useState('');
+  const { data: cart, isLoading, refetch } = useCart(userData?.privy_id || "");
+  const { data: exchangeRate, isLoading: isLoadingExchangeRate } =
+    useExchangeRate();
+  const [fullName, setFullName] = useState("");
+  const [street, setStreet] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [phone, setPhone] = useState("");
+  const [deliveryInstructions, setDeliveryInstructions] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { wallets } = useWallets();
 
-  const { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD } = useMemo(() => {
-    const subtotalMXN = cart?.items.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
-    const feeMXN = subtotalMXN * 0.03; // 3% fee
-    const totalMXN = subtotalMXN + feeMXN;
+  const { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD } =
+    useMemo(() => {
+      const subtotalMXN =
+        cart?.items.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        ) || 0;
+      const feeMXN = subtotalMXN * 0.03; // 3% fee
+      const totalMXN = subtotalMXN + feeMXN;
 
-    const exchangeRateValue = exchangeRate?.valor || 1;
-    const subtotalUSD = subtotalMXN / exchangeRateValue;
-    const feeUSD = feeMXN / exchangeRateValue;
-    const totalUSD = totalMXN / exchangeRateValue;
+      const exchangeRateValue = exchangeRate?.valor || 1;
+      const subtotalUSD = subtotalMXN / exchangeRateValue;
+      const feeUSD = feeMXN / exchangeRateValue;
+      const totalUSD = totalMXN / exchangeRateValue;
 
-    return { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD };
-  }, [cart, exchangeRate]);
+      return { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD };
+    }, [cart, exchangeRate]);
 
   if (isLoadingExchangeRate) return <div>Loading...</div>;
 
@@ -50,12 +60,12 @@ export default function Checkout() {
 
     setIsSubmitting(true);
     try {
-      const orderItems: OrderItem[] = cart.items.map(item => ({
+      const orderItems: OrderItem[] = cart.items.map((item) => ({
         asin: item.asin,
         quantity: item.quantity,
         price: item.price,
         title: item.title,
-        image_url: item.image_url
+        image_url: item.image_url,
       }));
 
       const wallet = wallets[0];
@@ -69,7 +79,10 @@ export default function Checkout() {
         });
       }
 
-      const { hash: createOrderHash, orderId } = await createOrderOnChain(wallet, amountInUSDCUnits);
+      const { hash: createOrderHash, orderId } = await createOrderOnChain(
+        wallet,
+        amountInUSDCUnits,
+      );
 
       toast({
         description: `Order created on blockchain. Order ID: ${orderId}, Transaction hash: ${createOrderHash}`,
@@ -79,18 +92,14 @@ export default function Checkout() {
       const orderDetails: CreateOrderRequest = {
         user_id: userData.privy_id,
         items: orderItems,
-        subtotal_amount: subtotalMXN,
-        fee_amount: feeMXN,
         total_amount: totalMXN,
-        subtotal_amount_usd: subtotalUSD,
-        fee_amount_usd: feeUSD,
         total_amount_usd: totalUSD,
         full_name: fullName,
         street: street,
         postal_code: postalCode,
         phone: phone,
         delivery_instructions: deliveryInstructions,
-        blockchain_order_id: orderId.toString()
+        blockchain_order_id: orderId.toString(),
       };
 
       await createOrder(orderDetails);
@@ -101,12 +110,13 @@ export default function Checkout() {
       });
 
       await refetch();
-      navigate('/my-orders');
+      navigate("/my-orders");
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error("Error creating order:", error);
       toast({
         title: "Error",
-        description: "There was an error creating your order. Please try again.",
+        description:
+          "There was an error creating your order. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -114,11 +124,16 @@ export default function Checkout() {
     }
   };
 
-  if (isLoading) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
 
   return (
     <div className="container mx-auto p-4">
-    <Navbar />
+      <Navbar />
       <h1 className="text-2xl font-bold mb-4">Checkout</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -158,7 +173,7 @@ export default function Checkout() {
                 Processing...
               </>
             ) : (
-              'Complete Order'
+              "Complete Order"
             )}
           </Button>
         </form>
@@ -167,19 +182,33 @@ export default function Checkout() {
           {cart?.items.map((item) => (
             <Card key={item.asin} className="mb-4">
               <CardContent className="flex items-center space-x-4 p-4">
-                <img src={item.image_url || '/placeholder.jpg'} alt={item.title} className="w-16 h-16 object-cover rounded" />
+                <img
+                  src={item.image_url || "/placeholder.jpg"}
+                  alt={item.title}
+                  className="w-16 h-16 object-cover rounded"
+                />
                 <div>
                   <h3 className="font-semibold">{item.title}</h3>
                   <p>Quantity: {item.quantity}</p>
-                  <p>Price: ${item.price.toFixed(2)} MXN (${(item.price / (exchangeRate?.valor || 1)).toFixed(2)} USD)</p>
+                  <p>
+                    Price: ${item.price.toFixed(2)} MXN ($
+                    {(item.price / (exchangeRate?.valor || 1)).toFixed(2)} USD)
+                  </p>
                 </div>
               </CardContent>
             </Card>
           ))}
           <div className="mt-4">
-            <p>Subtotal: ${subtotalMXN.toFixed(2)} MXN (${subtotalUSD.toFixed(2)} USD)</p>
-            <p>Fee (3%): ${feeMXN.toFixed(2)} MXN (${feeUSD.toFixed(2)} USD)</p>
-            <p className="font-semibold">Total: ${totalMXN.toFixed(2)} MXN (${totalUSD.toFixed(2)} USD)</p>
+            <p>
+              Subtotal: ${subtotalMXN.toFixed(2)} MXN (${subtotalUSD.toFixed(2)}{" "}
+              USD)
+            </p>
+            <p>
+              Fee (3%): ${feeMXN.toFixed(2)} MXN (${feeUSD.toFixed(2)} USD)
+            </p>
+            <p className="font-semibold">
+              Total: ${totalMXN.toFixed(2)} MXN (${totalUSD.toFixed(2)} USD)
+            </p>
           </div>
         </div>
       </div>

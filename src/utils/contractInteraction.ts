@@ -1,9 +1,20 @@
-import AmazonOrderSystemABI from '../abi/AmazonOrderSystemABI.json';
-import { createPublicClient, createWalletClient, custom, http, PublicClient, WalletClient } from 'viem';
-import ERC20abi from '../abi/ERC20abi.json';
-import { CONTRACT_ADDRESS, RPC_URL, USDC_ADDRESS } from '../config/contractConfig';
-import { parseUnits } from 'viem';
-import { sepolia } from 'viem/chains';
+import AmazonOrderSystemABI from "../abi/AmazonOrderSystemABI.json";
+import {
+  createPublicClient,
+  createWalletClient,
+  custom,
+  http,
+  PublicClient,
+  WalletClient,
+} from "viem";
+import ERC20abi from "../abi/ERC20abi.json";
+import {
+  CONTRACT_ADDRESS,
+  RPC_URL,
+  USDC_ADDRESS,
+} from "../config/contractConfig";
+import { parseUnits } from "viem";
+import { baseSepolia } from "viem/chains";
 
 const WEI_DECIMALS = 18;
 
@@ -24,27 +35,30 @@ let walletClient: WalletClient;
 async function initializeClients(wallet?: WalletType) {
   if (!publicClient) {
     publicClient = createPublicClient({
-      chain: sepolia,
+      chain: baseSepolia,
       transport: http(RPC_URL),
-    });
+    }) as any;
   }
 
   if (wallet && !walletClient) {
     const provider = await wallet.getEthereumProvider();
     walletClient = createWalletClient({
-      chain: sepolia,
+      chain: baseSepolia,
       transport: custom(provider),
     });
   }
 }
 
-async function checkAllowance(userAddress: string, amount: bigint): Promise<boolean> {
-  const allowance = await publicClient.readContract({
+async function checkAllowance(
+  userAddress: string,
+  amount: bigint,
+): Promise<boolean> {
+  const allowance = (await publicClient.readContract({
     address: USDC_ADDRESS,
     abi: ERC20abi,
-    functionName: 'allowance',
+    functionName: "allowance",
     args: [userAddress, CONTRACT_ADDRESS],
-  });
+  })) as unknown as bigint;
 
   return allowance >= amount;
 }
@@ -55,19 +69,18 @@ export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
 
   const isAllowanceEnough = await checkAllowance(address, amount);
   if (isAllowanceEnough) {
-    return null; 
+    return null;
   }
 
   const hash = await walletClient.writeContract({
     address: USDC_ADDRESS,
     abi: ERC20abi,
-    functionName: 'approve',
+    functionName: "approve",
     args: [CONTRACT_ADDRESS, amount],
     account: address,
-    chain: sepolia
+    chain: baseSepolia,
   });
 
-  // Wait for the transaction receipt
   await publicClient.waitForTransactionReceipt({ hash });
 
   return hash;
@@ -80,8 +93,8 @@ export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
 
     const { request } = await publicClient.simulateContract({
       address: CONTRACT_ADDRESS,
-      abi: AmazonOrderSystemABI,
-      functionName: 'createOrder',
+      abi: AmazonOrderSystemABI as any,
+      functionName: "createOrder",
       args: [amount],
       account: address,
     });
@@ -95,20 +108,21 @@ export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
       abi: AmazonOrderSystemABI,
       fromBlock: receipt.blockNumber,
       toBlock: receipt.blockNumber,
-      eventName: 'OrderCreated',
+      eventName: "OrderCreated",
     });
-
-    const orderCreatedEvent = events.find(event => event.transactionHash === hash);
+    const orderCreatedEvent = events.find(
+      (event) => event.transactionHash === hash,
+    ) as any;
 
     if (!orderCreatedEvent) {
-      throw new Error('OrderCreated event not found for the transaction');
+      throw new Error("OrderCreated event not found for the transaction");
     }
 
-    const orderId = orderCreatedEvent.args.orderId;
+    const orderId = orderCreatedEvent.args.orderId as any;
 
     return { hash, orderId };
   } catch (error) {
-    console.error('Error creating order on chain:', error);
+    console.error("Error creating order on chain:", error);
     throw error;
   }
 }
@@ -120,7 +134,7 @@ export async function shipOrderOnChain(wallet: WalletType, orderId: bigint) {
   const { request } = await publicClient.simulateContract({
     address: CONTRACT_ADDRESS,
     abi: AmazonOrderSystemABI,
-    functionName: 'shipOrder',
+    functionName: "shipOrder",
     args: [orderId],
     account: address,
   });

@@ -187,7 +187,7 @@ export const getOrderDetails = async (
 };
 
 export const fetchExchangeRate = async (): Promise<ExchangeRate> => {
-  const response = await fetch("/api/exchange-rate/latest");
+  const response = await fetch(`${API_BASE_URL}/api/exchange-rate/latest`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch exchange rate");
