@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Loader2 } from 'lucide-react';
-import { useUser } from '../contexts/UserContext';
-import { useCart, useRemoveFromCart } from '../hooks';
-import { useExchangeRate } from '../hooks/useExchangeRate'; 
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { ShoppingCart, Loader2 } from "lucide-react";
+import { useUser } from "../contexts/UserContext";
+import { useCart, useRemoveFromCart } from "../hooks";
+import { useExchangeRate } from "../hooks/useExchangeRate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,39 +15,51 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "@/components/ui/sheet";
-import { CartItem } from '../types/types';
+import { CartItem } from "../types/types";
 import { Separator } from "@/components/ui/separator";
 
 function CartSheet() {
   const navigate = useNavigate();
   const { userData } = useUser();
-  const { data: cart, isLoading } = useCart(userData?.privy_id || '');
+  const { data: cart, isLoading } = useCart(userData?.privy_id || "");
   const removeFromCartMutation = useRemoveFromCart();
-  const { data: exchangeRate, isLoading: isLoadingExchangeRate } = useExchangeRate(); 
+  const { data: exchangeRate, isLoading: isLoadingExchangeRate } =
+    useExchangeRate();
 
-  const { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD } = useMemo(() => {
-    if (!cart || !cart.items || !exchangeRate) {
-      return { subtotalMXN: 0, feeMXN: 0, totalMXN: 0, subtotalUSD: 0, feeUSD: 0, totalUSD: 0 };
-    }
+  const { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD } =
+    useMemo(() => {
+      if (!cart || !cart.items || !exchangeRate) {
+        return {
+          subtotalMXN: 0,
+          feeMXN: 0,
+          totalMXN: 0,
+          subtotalUSD: 0,
+          feeUSD: 0,
+          totalUSD: 0,
+        };
+      }
 
-    const subtotalMXN = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const feeMXN = subtotalMXN * 0.03; // 3% fee
-    const totalMXN = subtotalMXN + feeMXN;
+      const subtotalMXN = cart.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+      const feeMXN = subtotalMXN * 0.03; // 3% fee
+      const totalMXN = subtotalMXN + feeMXN;
 
-    const exchangeRateValue = exchangeRate.valor || 1;
-    const subtotalUSD = subtotalMXN / exchangeRateValue;
-    const feeUSD = feeMXN / exchangeRateValue;
-    const totalUSD = totalMXN / exchangeRateValue;
+      const exchangeRateValue = exchangeRate.valor || 1;
+      const subtotalUSD = subtotalMXN / exchangeRateValue;
+      const feeUSD = feeMXN / exchangeRateValue;
+      const totalUSD = totalMXN / exchangeRateValue;
 
-    return { 
-      subtotalMXN, 
-      feeMXN, 
-      totalMXN, 
-      subtotalUSD, 
-      feeUSD, 
-      totalUSD 
-    };
-  }, [cart, exchangeRate]);
+      return {
+        subtotalMXN,
+        feeMXN,
+        totalMXN,
+        subtotalUSD,
+        feeUSD,
+        totalUSD,
+      };
+    }, [cart, exchangeRate]);
 
   const handleRemoveFromCart = async (asin: string) => {
     if (!userData) return;
@@ -55,10 +67,11 @@ function CartSheet() {
   };
 
   const handleCheckout = () => {
-    navigate('/checkout');
+    navigate("/checkout");
   };
 
-  if (isLoading || isLoadingExchangeRate) return <Loader2 className="h-8 w-8 animate-spin" />;
+  if (isLoading || isLoadingExchangeRate)
+    return <Loader2 className="h-8 w-8 animate-spin" />;
 
   return (
     <Sheet>
@@ -88,38 +101,53 @@ function CartSheet() {
             {cart.items.map((item: CartItem) => (
               <div key={item.asin} className="flex items-center space-x-4">
                 <div className="w-20 h-20 relative">
-                  <img 
-                    src={item.image_url || '/placeholder.jpg'} 
-                    alt={item.title} 
+                  <img
+                    src={item.image_url || "/placeholder.jpg"}
+                    alt={item.title}
                     className="w-full h-full object-cover rounded"
                     onError={(e) => {
-                      e.currentTarget.src = '/placeholder.jpg';
+                      e.currentTarget.src = "/placeholder.jpg";
                     }}
                   />
                 </div>
                 <div className="flex-grow">
-                  <h3 className="font-semibold text-sm line-clamp-2">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+                  <h3 className="font-semibold text-sm line-clamp-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Quantity: {item.quantity}
+                  </p>
                   <p className="font-bold text-lg text-green-600">
                     ${(item.price * item.quantity).toFixed(2)} MXN
                     <span className="text-sm font-normal ml-1">
-                      (${((item.price * item.quantity) / (exchangeRate?.valor || 1)).toFixed(2)} USD)
+                      ($
+                      {(
+                        (item.price * item.quantity) /
+                        (exchangeRate?.valor || 1)
+                      ).toFixed(2)}{" "}
+                      USD)
                     </span>
                   </p>
                 </div>
-                <Button 
-                  size="sm" 
-                  variant="destructive" 
+                <Button
+                  size="sm"
+                  variant="destructive"
                   onClick={() => handleRemoveFromCart(item.asin)}
                   disabled={removeFromCartMutation.isPending}
                 >
-                  {removeFromCartMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Remove'}
+                  {removeFromCartMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Remove"
+                  )}
                 </Button>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground mt-8">Your cart is empty</p>
+          <p className="text-center text-muted-foreground mt-8">
+            Your cart is empty
+          </p>
         )}
         {cart && cart.items.length > 0 && (
           <SheetFooter className="mt-8">
@@ -128,18 +156,27 @@ function CartSheet() {
               <div className="flex flex-col space-y-2 mb-4">
                 <div className="flex justify-between items-center">
                   <span>Subtotal:</span>
-                  <span>${subtotalMXN.toFixed(2)} MXN (${subtotalUSD.toFixed(2)} USD)</span>
+                  <span>
+                    ${subtotalMXN.toFixed(2)} MXN (${subtotalUSD.toFixed(2)}{" "}
+                    USD)
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Fee (3%):</span>
-                  <span>${feeMXN.toFixed(2)} MXN (${feeUSD.toFixed(2)} USD)</span>
+                  <span>
+                    ${feeMXN.toFixed(2)} MXN (${feeUSD.toFixed(2)} USD)
+                  </span>
                 </div>
                 <div className="flex justify-between items-center font-semibold">
                   <span>Total:</span>
-                  <span>${totalMXN.toFixed(2)} MXN (${totalUSD.toFixed(2)} USD)</span>
+                  <span>
+                    ${totalMXN.toFixed(2)} MXN (${totalUSD.toFixed(2)} USD)
+                  </span>
                 </div>
               </div>
-              <Button className="w-full" onClick={handleCheckout}>Proceed to Checkout</Button>
+              <Button className="w-full" onClick={handleCheckout}>
+                Proceed to Checkout
+              </Button>
             </div>
           </SheetFooter>
         )}

@@ -1,11 +1,10 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Home, DoorOpen, CircleUserRound, ShoppingBag } from 'lucide-react';
-import { usePrivy } from '@privy-io/react-auth';
-import { useUser } from '../contexts/UserContext';
-import { ModeToggle } from '../componentsUX/mode-toggle';
-import NavItem from '../componentsUX/NavItem';
-import CartSheet from '../componentsUX/CartSheet';
+import { useNavigate } from "react-router-dom";
+import { Home, DoorOpen, CircleUserRound, ShoppingBag } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useUser } from "../contexts/UserContext";
+import { ModeToggle } from "../componentsUX/mode-toggle";
+import NavItem from "../componentsUX/NavItem";
+import CartSheet from "../componentsUX/CartSheet";
 
 function Navbar() {
   const { authenticated, logout } = usePrivy();
@@ -15,12 +14,12 @@ function Navbar() {
   const handleLogout = async () => {
     if (authenticated) {
       await logout();
-      navigate('/');
+      navigate("/");
     }
   };
 
   const abbreviateWallet = (wallet: string | undefined) => {
-    if (!wallet) return '';
+    if (!wallet) return "";
     return `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
   };
 
@@ -32,17 +31,13 @@ function Navbar() {
           <CartSheet />
           <NavItem icon={ShoppingBag} tooltip="My Orders" to="/my-orders" />
           {authenticated && (
-            <NavItem 
-              icon={DoorOpen} 
-              tooltip="Logout" 
-              onClick={handleLogout} 
-            />
+            <NavItem icon={DoorOpen} tooltip="Logout" onClick={handleLogout} />
           )}
         </div>
         <div className="flex flex-col items-center gap-4">
-          <NavItem 
-            icon={CircleUserRound} 
-            tooltip={`Wallet: ${abbreviateWallet(userData?.wallet_address || '')}`}
+          <NavItem
+            icon={CircleUserRound}
+            tooltip={`Wallet: ${abbreviateWallet(userData?.wallet_address || "")}`}
             tooltipClassName="w-60"
           />
           <ModeToggle />

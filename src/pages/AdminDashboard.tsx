@@ -1,11 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { useAdmin } from '../hooks/useAdmin';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { usePrivy } from '@privy-io/react-auth';
-import { getAllOrders } from '../utils/api';
-import { Order } from '../types/types';
-import Navbar from './Navbar';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useEffect, useState } from "react";
+import { useAdmin } from "../hooks/useAdmin";
+import { Navigate, useNavigate } from "react-router-dom";
+import { usePrivy } from "@privy-io/react-auth";
+import { getAllOrders } from "../utils/api";
+import { Order } from "../types/types";
+import Navbar from "./Navbar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function AdminDashboard() {
   const { isAdmin, isLoading: isAdminLoading } = useAdmin();
@@ -19,12 +26,12 @@ export default function AdminDashboard() {
       try {
         const accessToken = await getAccessToken();
         if (!accessToken) {
-          throw new Error('No access token available');
+          throw new Error("No access token available");
         }
         const fetchedOrders = await getAllOrders(accessToken);
         setOrders(fetchedOrders);
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error("Error fetching orders:", error);
       } finally {
         setIsLoading(false);
       }
@@ -45,7 +52,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto p-4">
-      <Navbar/>
+      <Navbar />
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
       <Table>
         <TableHeader>
@@ -61,8 +68,8 @@ export default function AdminDashboard() {
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow 
-              key={order.id} 
+            <TableRow
+              key={order.id}
               onClick={() => handleRowClick(order.id)}
               className="cursor-pointer hover:bg-gray-100"
             >
@@ -72,7 +79,7 @@ export default function AdminDashboard() {
               <TableCell>${order.total_amount}</TableCell>
               <TableCell>${order.total_amount_usd}</TableCell>
               <TableCell>{order.status}</TableCell>
-              <TableCell>{order.shipping_guide || 'N/A'}</TableCell>
+              <TableCell>{order.shipping_guide || "N/A"}</TableCell>
             </TableRow>
           ))}
         </TableBody>

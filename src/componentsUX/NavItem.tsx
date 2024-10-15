@@ -1,8 +1,13 @@
-import React, { forwardRef } from 'react';
-import { Link } from 'react-router-dom';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { forwardRef } from "react";
+import { Link } from "react-router-dom";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { NavItemProps } from '../types/types';
+import { NavItemProps } from "../types/types";
 
 const NavItem = forwardRef<HTMLButtonElement, NavItemProps>(
   ({ icon: Icon, tooltip, to, onClick, badge, tooltipClassName }, ref) => {
@@ -24,7 +29,11 @@ const NavItem = forwardRef<HTMLButtonElement, NavItemProps>(
             {to ? (
               <Link to={to}>{content}</Link>
             ) : (
-              <button ref={ref} onClick={onClick} className="bg-transparent border-none p-0 cursor-pointer">
+              <button
+                ref={ref}
+                onClick={onClick}
+                className="bg-transparent border-none p-0 cursor-pointer"
+              >
                 {content}
               </button>
             )}
@@ -35,9 +44,9 @@ const NavItem = forwardRef<HTMLButtonElement, NavItemProps>(
         </Tooltip>
       </TooltipProvider>
     );
-  }
+  },
 );
 
-NavItem.displayName = 'NavItem';
+NavItem.displayName = "NavItem";
 
 export default NavItem;

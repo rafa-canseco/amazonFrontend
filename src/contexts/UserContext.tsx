@@ -1,7 +1,13 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { checkUserRegistration, registerUser} from '../utils/api';
-import { UserData, UserContextType } from '../types/types';
+import {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+} from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { checkUserRegistration, registerUser } from "../utils/api";
+import { UserData, UserContextType } from "../types/types";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -24,7 +30,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       try {
         if (user) {
           const walletAddress = user.wallet?.address || null;
-          const isUserRegistered = await checkUserRegistration(user.id, walletAddress);
+          const isUserRegistered = await checkUserRegistration(
+            user.id,
+            walletAddress,
+          );
 
           if (!isUserRegistered) {
             const newUserData = await registerUser({
@@ -42,7 +51,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           setIsRegistered(false);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred",
+        );
         setIsRegistered(false);
         setUserData(null);
       } finally {
@@ -52,7 +63,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     checkAndRegisterUser();
   }, [ready, user]);
-
 
   return (
     <UserContext.Provider
@@ -71,7 +81,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 export const useUser = () => {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 };

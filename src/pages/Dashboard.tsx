@@ -1,13 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { searchProducts } from '../utils/api';
-import { Product, SearchResponse } from '../types/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { searchProducts } from "../utils/api";
+import { Product, SearchResponse } from "../types/types";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import Navbar from './Navbar';
-import { SearchBar } from '../componentsUX/SearchBar';
-import { useNavigate } from 'react-router-dom';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import Navbar from "./Navbar";
+import { SearchBar } from "../componentsUX/SearchBar";
+import { useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -21,7 +36,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const query = searchParams.get('query');
+    const query = searchParams.get("query");
     if (query) {
       performSearch(query);
     }
@@ -35,8 +50,8 @@ export default function Dashboard() {
       setSearchResults(response.products);
       setCurrentPage(1);
     } catch (error) {
-      console.error('Error searching products:', error);
-      setError('Hubo un error al buscar los productos');
+      console.error("Error searching products:", error);
+      setError("Hubo un error al buscar los productos");
       setSearchResults([]);
     } finally {
       setIsLoading(false);
@@ -50,7 +65,7 @@ export default function Dashboard() {
   const totalPages = Math.ceil(searchResults.length / ITEMS_PER_PAGE);
   const paginatedResults = searchResults.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   const renderPaginationItems = () => {
@@ -69,13 +84,13 @@ export default function Dashboard() {
             >
               {i}
             </PaginationLink>
-          </PaginationItem>
+          </PaginationItem>,
         );
       } else if (i === currentPage - 2 || i === currentPage + 2) {
         items.push(
           <PaginationItem key={i}>
             <PaginationEllipsis />
-          </PaginationItem>
+          </PaginationItem>,
         );
       }
     }
@@ -83,10 +98,14 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="sm:ml-14 pt-20"> {/* Ajustado para tener en cuenta la navbar */}
+    <div className="sm:ml-14 pt-20">
+      {" "}
+      {/* Ajustado para tener en cuenta la navbar */}
       <div className="container mx-auto p-4">
-            <Navbar/>
-        <SearchBar initialQuery={new URLSearchParams(location.search).get('query') || ''} />
+        <Navbar />
+        <SearchBar
+          initialQuery={new URLSearchParams(location.search).get("query") || ""}
+        />
         <h1 className="text-2xl font-bold mb-4">Amazon Product Search</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         {isLoading ? (
@@ -96,25 +115,31 @@ export default function Dashboard() {
             <h2 className="text-xl font-semibold mb-2">Search Results</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {paginatedResults.map((product, index) => (
-                <Card 
-                  key={`${product.asin}-${index}`} 
+                <Card
+                  key={`${product.asin}-${index}`}
                   className="w-full hover:shadow-lg transition-shadow duration-200 cursor-pointer"
                   onClick={() => handleProductClick(product.asin)}
                 >
                   <CardHeader>
                     <CardTitle>{product.title}</CardTitle>
-                    {product.brand && <CardDescription>Brand: {product.brand}</CardDescription>}
+                    {product.brand && (
+                      <CardDescription>Brand: {product.brand}</CardDescription>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-center mb-4">
                       {product.image ? (
-                        <img 
-                          src={product.image} 
-                          alt={product.title} 
-                          className="w-32 h-32 object-cover" 
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          className="w-32 h-32 object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = 'path/to/placeholder-image.jpg';
-                            console.error(`Failed to load image for product ${product.asin}:`, product.image);
+                            e.currentTarget.src =
+                              "path/to/placeholder-image.jpg";
+                            console.error(
+                              `Failed to load image for product ${product.asin}:`,
+                              product.image,
+                            );
                           }}
                         />
                       ) : (
@@ -127,10 +152,15 @@ export default function Dashboard() {
                     {product.rating !== undefined && (
                       <p className="text-sm">
                         Rating: {product.rating}/5
-                        {product.ratings_total !== undefined && ` (${product.ratings_total} reviews)`}
+                        {product.ratings_total !== undefined &&
+                          ` (${product.ratings_total} reviews)`}
                       </p>
                     )}
-                    {product.position && <p className="text-xs text-gray-500">Position: {product.position}</p>}
+                    {product.position && (
+                      <p className="text-xs text-gray-500">
+                        Position: {product.position}
+                      </p>
+                    )}
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button
@@ -142,9 +172,9 @@ export default function Dashboard() {
                       Ver Detalles
                     </Button>
                     <Button asChild variant="outline">
-                      <a 
-                        href={product.link} 
-                        target="_blank" 
+                      <a
+                        href={product.link}
+                        target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -158,14 +188,18 @@ export default function Dashboard() {
             <Pagination className="mt-4">
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  <PaginationPrevious
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                   />
                 </PaginationItem>
                 {renderPaginationItems()}
                 <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  <PaginationNext
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>

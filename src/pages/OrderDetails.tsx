@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { usePrivy } from '@privy-io/react-auth';
-import { getOrderDetails, updateOrderStatus } from '../utils/api';
-import { Order, OrderItem } from '../types/types';
-import Navbar from './Navbar';
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { usePrivy } from "@privy-io/react-auth";
+import { getOrderDetails, updateOrderStatus } from "../utils/api";
+import { Order, OrderItem } from "../types/types";
+import Navbar from "./Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { shipOrderOnChain } from '../utils/contractInteraction';
+import { shipOrderOnChain } from "../utils/contractInteraction";
 import {
   Table,
   TableBody,
@@ -16,31 +16,35 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useWallets } from '@privy-io/react-auth';
+} from "@/components/ui/table";
+import { useWallets } from "@privy-io/react-auth";
 
 export default function OrderDetails() {
   const { orderId } = useParams<{ orderId: string }>();
-  const { getAccessToken, user } = usePrivy();
+  const { getAccessToken } = usePrivy();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [shippingGuide, setShippingGuide] = useState('');
+  const [shippingGuide, setShippingGuide] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
-    const { wallets } = useWallets();
+  const { wallets } = useWallets();
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
         const accessToken = await getAccessToken();
         if (!accessToken) {
-          throw new Error('No access token available');
+          throw new Error("No access token available");
         }
         const fetchedOrder = await getOrderDetails(accessToken, orderId!);
         setOrder(fetchedOrder);
       } catch (error) {
-        console.error('Error fetching order details:', error);
-        toast({ title: "Error", description: "Failed to fetch order details.", variant: "destructive" });
+        console.error("Error fetching order details:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch order details.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -51,7 +55,11 @@ export default function OrderDetails() {
 
   const handleUpdateStatus = async () => {
     if (!order || !shippingGuide) {
-      toast({ title: "Error", description: "Please enter a shipping guide number.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Please enter a shipping guide number.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -61,17 +69,24 @@ export default function OrderDetails() {
 
       // Update status in backend
       const accessToken = await getAccessToken();
-      if (!accessToken) throw new Error('No access token available');
+      if (!accessToken) throw new Error("No access token available");
 
       await updateOrderStatus(accessToken, order.id, "shipped", shippingGuide);
 
       // Update local state
       setOrder({ ...order, status: "shipped" });
 
-      toast({ title: "Success", description: "Order status updated successfully." });
+      toast({
+        title: "Success",
+        description: "Order status updated successfully.",
+      });
     } catch (error) {
-      console.error('Error updating order status:', error);
-      toast({ title: "Error", description: "Failed to update order status.", variant: "destructive" });
+      console.error("Error updating order status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update order status.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -92,56 +107,82 @@ export default function OrderDetails() {
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell><strong>Order ID:</strong></TableCell>
+            <TableCell>
+              <strong>Order ID:</strong>
+            </TableCell>
             <TableCell>{order.id}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Blockchain Order ID:</strong></TableCell>
+            <TableCell>
+              <strong>Blockchain Order ID:</strong>
+            </TableCell>
             <TableCell>{order.blockchain_order_id}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>User ID:</strong></TableCell>
+            <TableCell>
+              <strong>User ID:</strong>
+            </TableCell>
             <TableCell>{order.user_id}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Total (MXN):</strong></TableCell>
+            <TableCell>
+              <strong>Total (MXN):</strong>
+            </TableCell>
             <TableCell>${order.total_amount}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Total (USD):</strong></TableCell>
+            <TableCell>
+              <strong>Total (USD):</strong>
+            </TableCell>
             <TableCell>${order.total_amount_usd}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Status:</strong></TableCell>
+            <TableCell>
+              <strong>Status:</strong>
+            </TableCell>
             <TableCell>{order.status}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Created At:</strong></TableCell>
+            <TableCell>
+              <strong>Created At:</strong>
+            </TableCell>
             <TableCell>{order.created_at}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Full Name:</strong></TableCell>
+            <TableCell>
+              <strong>Full Name:</strong>
+            </TableCell>
             <TableCell>{order.full_name}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Street:</strong></TableCell>
+            <TableCell>
+              <strong>Street:</strong>
+            </TableCell>
             <TableCell>{order.street}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Postal Code:</strong></TableCell>
+            <TableCell>
+              <strong>Postal Code:</strong>
+            </TableCell>
             <TableCell>{order.postal_code}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Phone:</strong></TableCell>
+            <TableCell>
+              <strong>Phone:</strong>
+            </TableCell>
             <TableCell>{order.phone}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell><strong>Delivery Instructions:</strong></TableCell>
+            <TableCell>
+              <strong>Delivery Instructions:</strong>
+            </TableCell>
             <TableCell>{order.delivery_instructions}</TableCell>
           </TableRow>
           {order.shipping_guide && (
             <TableRow>
-              <TableCell><strong>Shipping Guide:</strong></TableCell>
+              <TableCell>
+                <strong>Shipping Guide:</strong>
+              </TableCell>
               <TableCell>{order.shipping_guide}</TableCell>
             </TableRow>
           )}
@@ -169,13 +210,19 @@ export default function OrderDetails() {
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell>${item.price}</TableCell>
                   <TableCell>
-                    <img src={item.image_url} alt={item.title} className="w-16 h-16 object-cover" />
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="w-16 h-16 object-cover"
+                    />
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5}>No items found for this order.</TableCell>
+                <TableCell colSpan={5}>
+                  No items found for this order.
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -188,14 +235,11 @@ export default function OrderDetails() {
           placeholder="Enter shipping guide"
           className="mb-2"
         />
-        <Button
-          onClick={handleUpdateStatus}
-          disabled={!shippingGuide}
-        >
+        <Button onClick={handleUpdateStatus} disabled={!shippingGuide}>
           Update Status to Shipped
         </Button>
       </div>
-      <Button onClick={() => navigate('/admin')} className="mt-4">
+      <Button onClick={() => navigate("/admin")} className="mt-4">
         Back to Dashboard
       </Button>
     </div>
