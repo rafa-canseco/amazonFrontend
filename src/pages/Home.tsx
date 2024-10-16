@@ -6,12 +6,18 @@ import LogButton from "@/componentsUX/LogButton";
 import mexicoSvg from "../assets/mexico.svg";
 import { useExchangeRate } from "../hooks/useExchangeRate";
 import baseSvg from "../assets/base.svg";
+import amazonSvg from "../assets/amazon.svg";
+import usdcSvg from "../assets/usdc.svg";
 import {
   HandCoins,
   Clock,
   Frown,
   Store,
   MessageCircleQuestion,
+  KeyRound,
+  ArrowRight,
+  ArrowDownToLine,
+  ShoppingCart,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -106,11 +112,12 @@ function Home() {
       </header>
       <div className="flex-grow flex items-center justify-center p-6">
         <div className="max-w-4xl text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight mb-8">
-            Crypto meets everyday shopping
+          <h1 className="text-5xl font-extrabold tracking-tight mb-8 flex items-center justify-center">
+            <img src={amazonSvg} alt="Amazon" className="w-12 h-12 mr-4" />
+            Amazon, meet crypto payments
           </h1>
           <h2 className="text-3xl font-bold text-gray-600 mb-12">
-            adoption follows utility
+            From blockchain to doorstep !
           </h2>
 
           <div className="flex justify-between mb-12">
@@ -121,22 +128,32 @@ function Home() {
               <CardContent>
                 <ol className="list-decimal list-inside text-left space-y-4">
                   <li className="flex items-center justify-between">
-                    Send crypto to CEX
-                    <div className="flex">
-                      <Frown className="ml-2" />
-                    </div>
+                    Transfer crypto to exchange
+                    <ArrowRight className="ml-2" />
                   </li>
                   <li className="flex items-center justify-between">
-                    Sell crypto for fiat (pay fees and spread)
+                    Log in to exchange
+                    <Frown className="ml-2" />
+                  </li>
+                  <li className="flex items-center justify-between">
+                    Convert to fiat (pay fees & spread)
                     <HandCoins className="ml-2" />
                   </li>
                   <li className="flex items-center justify-between">
-                    Wait for bank deposit
+                    Withdraw to bank account
+                    <ArrowDownToLine className="ml-2" />
+                  </li>
+                  <li className="flex items-center justify-between">
+                    Wait for funds to clear
                     <Clock className="ml-2" />
                   </li>
                   <li className="flex items-center justify-between">
-                    Finally shop on Amazon
-                    <Store className="ml-2" />
+                    Log in to Amazon
+                    <KeyRound className="ml-2" />
+                  </li>
+                  <li className="flex items-center justify-between">
+                    Finally, make your purchase
+                    <ShoppingCart className="ml-2" />
                   </li>
                 </ol>
               </CardContent>
@@ -147,7 +164,7 @@ function Home() {
               </CardHeader>
               <CardContent>
                 <p className="text-left flex items-center justify-between">
-                  Shop directly on Amazon using crypto from your wallet
+                  Just connect your wallet and start buying!
                   <Store className="ml-2" />
                 </p>
                 <div className="mt-4 flex justify-center">
@@ -174,6 +191,8 @@ function Home() {
             <img src={mexicoSvg} alt="Mexico" className="w-12 h-12" />
             <span>on</span>
             <img src={baseSvg} alt="Base network" className="w-12 h-12" />
+            <span>using</span>
+            <img src={usdcSvg} alt="USDC" className="w-12 h-12" />
             <Sheet>
               <SheetTrigger asChild>
                 <button className="bg-blue-500 text-white p-2 rounded flex items-center hover:bg-blue-600 transition-colors duration-200">
@@ -230,7 +249,7 @@ function Home() {
                 <CardTitle>{stats.total_users}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Users Registered</p>
+                <p>Total Users in Coinshop :)</p>
               </CardContent>
             </Card>
             <Card className="w-[200px]">
