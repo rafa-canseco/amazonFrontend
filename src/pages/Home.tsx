@@ -4,6 +4,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useUser } from "../contexts/UserContext";
 import LogButton from "@/componentsUX/LogButton";
 import mexicoSvg from "../assets/mexico.svg";
+import { useExchangeRate } from "../hooks/useExchangeRate";
 import baseSvg from "../assets/base.svg";
 import {
   HandCoins,
@@ -27,10 +28,16 @@ function Home() {
   const { authenticated, ready } = usePrivy();
   const { isRegistered, isLoading } = useUser();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ total_users: 0, total_order_amount: 0 });
+  const [stats, setStats] = useState({
+    total_users: 0,
+    total_order_amount: 0,
+    total_order_amount_usd: 0,
+  });
   const [country, setCountry] = useState("");
   const [network, setNetwork] = useState("");
   const { toast } = useToast();
+  const { data: exchangeRate, isLoading: isExchangeRateLoading } =
+    useExchangeRate();
 
   useEffect(() => {
     if (ready && authenticated && isRegistered && !isLoading) {
@@ -42,14 +49,26 @@ function Home() {
     const fetchStats = async () => {
       try {
         const statsData = await getStats();
-        setStats(statsData);
+        if (exchangeRate && !isExchangeRateLoading) {
+          const usdAmount =
+            statsData.total_order_amount / (exchangeRate.valor || 1);
+          setStats({
+            ...statsData,
+            total_order_amount_usd: usdAmount,
+          });
+        } else {
+          setStats({
+            ...statsData,
+            total_order_amount_usd: statsData.total_order_amount,
+          });
+        }
       } catch (error) {
         console.error("Failed to fetch stats:", error);
       }
     };
 
     fetchStats();
-  }, []);
+  }, [exchangeRate, isExchangeRateLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,10 +235,15 @@ function Home() {
             </Card>
             <Card className="w-[200px]">
               <CardHeader>
-                <CardTitle>${stats.total_order_amount?.toFixed(2)}</CardTitle>
+                <CardTitle>
+                  $
+                  {isExchangeRateLoading || !stats.total_order_amount_usd
+                    ? "Loading..."
+                    : stats.total_order_amount_usd.toFixed(2)}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Total Purchases via CoinShop</p>
+                <p>Total Volume of Purchases via CoinShop (USD)</p>
               </CardContent>
             </Card>
           </div>
