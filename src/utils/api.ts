@@ -12,7 +12,11 @@ import {
   Order,
   ExchangeRate,
 } from "../types/types";
-import { API_BASE_URL, LANDING_HOOK } from "../config/contractConfig";
+import {
+  API_BASE_URL,
+  LANDING_HOOK,
+  FEEDBACK_HOOK,
+} from "../config/contractConfig";
 
 export const searchProducts = async (
   query: string,
@@ -215,6 +219,18 @@ export const sendFeedback = async (country: string, network: string) => {
 
   try {
     await axios.post(LANDING_HOOK, data);
+  } catch (error) {
+    console.error("Error sending feedback:", error);
+    throw error;
+  }
+};
+
+export const sendFeedbackInside = async (type: string, comment: string) => {
+  const timestamp = new Date().toISOString();
+  const data = { type, comment, timestamp };
+
+  try {
+    await axios.post(FEEDBACK_HOOK, data);
   } catch (error) {
     console.error("Error sending feedback:", error);
     throw error;

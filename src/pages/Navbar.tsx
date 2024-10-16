@@ -5,6 +5,7 @@ import { useUser } from "../contexts/UserContext";
 import { ModeToggle } from "../componentsUX/mode-toggle";
 import NavItem from "../componentsUX/NavItem";
 import CartSheet from "../componentsUX/CartSheet";
+import { FeedbackSheet } from "../componentsUX/FeedbackSheet";
 
 function Navbar() {
   const { authenticated, logout } = usePrivy();
@@ -40,6 +41,7 @@ function Navbar() {
             tooltip={`Wallet: ${abbreviateWallet(userData?.wallet_address || "")}`}
             tooltipClassName="w-60"
           />
+          <NavItem icon={FeedbackSheet} tooltip="Enviar Feedback" />
           <ModeToggle />
         </div>
       </nav>

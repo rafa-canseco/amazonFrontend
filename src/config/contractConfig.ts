@@ -10,3 +10,4 @@ export const ADMIN_WALLET_ADDRESS =
 export const ADMIN_PRIVY_ID = import.meta.env.VITE_ADMIN_PRIVY_ID || "";
 export const API_BASE_URL = import.meta.env.VITE_SERVER_HOST || "";
 export const LANDING_HOOK = import.meta.env.VITE_MAKE_LANDING_HOOK;
+export const FEEDBACK_HOOK = import.meta.env.VITE_MAKE_FEEDBACK_HOOK;

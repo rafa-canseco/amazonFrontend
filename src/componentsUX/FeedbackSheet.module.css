@@ -1,0 +1,22 @@
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    color: inherit;
+  }
+  50% {
+    transform: scale(1.05);
+    color: #ff6b6b;
+  }
+  100% {
+    transform: scale(1);
+    color: inherit;
+  }
+}
+
+.feedbackButtonPulse {
+  animation: pulse 2s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
