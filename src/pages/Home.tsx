@@ -195,7 +195,7 @@ function Home() {
             <img src={usdcSvg} alt="USDC" className="w-12 h-12" />
             <Sheet>
               <SheetTrigger asChild>
-                <button className="bg-blue-500 text-white p-2 rounded flex items-center hover:bg-blue-600 transition-colors duration-200">
+                <button className="bg-red-600 text-white font-bold p-2 rounded flex items-center hover:bg-blue-800 transition-colors duration-2 animate-pulse">
                   <MessageCircleQuestion className="mr-2" />
                   Where next?
                 </button>
