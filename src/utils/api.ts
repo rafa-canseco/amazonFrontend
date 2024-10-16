@@ -197,8 +197,8 @@ export const fetchExchangeRate = async (): Promise<ExchangeRate> => {
 };
 
 export const getStats = async (): Promise<{
-  users: number;
-  totalPurchases: number;
+  total_users: number;
+  total_order_amount: number;
 }> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/api/stats`);
