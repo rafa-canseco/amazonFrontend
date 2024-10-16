@@ -66,6 +66,8 @@ export default function Checkout() {
         price: item.price,
         title: item.title,
         image_url: item.image_url,
+        variant_asin: item.variant_asin,
+        variant_dimensions: item.variant_dimensions,
       }));
 
       const wallet = wallets[0];

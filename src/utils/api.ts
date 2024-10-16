@@ -236,3 +236,11 @@ export const sendFeedbackInside = async (type: string, comment: string) => {
     throw error;
   }
 };
+
+export const getVariantPrice = async (asin: string): Promise<number> => {
+  const response = await axios.post<ProductDetailResponse>(
+    `${API_BASE_URL}/api/productDetails`,
+    { asin } as ProductDetailRequest,
+  );
+  return response.data.product.price?.value || 0;
+};

@@ -32,8 +32,8 @@ export interface ProductDetail {
   title: string;
   description?: string;
   feature_bullets?: string[];
-  variants?: Record<string, unknown>[];
-  attributes?: Record<string, unknown>;
+  variants?: ProductVariant[];
+  attributes?: Record<string, string>;
   images?: string[];
   price?: ProductPrice;
   rating?: number;
@@ -41,7 +41,9 @@ export interface ProductDetail {
   reviews?: Record<string, unknown>[];
   link: string;
   brand?: string;
-  availability?: Record<string, string>;
+  availability?: {
+    status: string;
+  };
 }
 
 export interface ProductDetailResponse {
@@ -70,6 +72,8 @@ export interface CartItem {
   price: number;
   quantity: number;
   image_url: string;
+  variant_asin?: string;
+  variant_dimensions?: { [key: string]: string };
 }
 
 export interface Cart {
@@ -114,8 +118,9 @@ export interface OrderItem {
   price: number;
   title: string;
   image_url?: string;
+  variant_asin?: string;
+  variant_dimensions?: { [key: string]: string };
 }
-
 
 export interface Order {
   id: string;
@@ -147,4 +152,26 @@ export interface ExchangeRate {
   titulo: string;
   fecha: string;
   valor: number;
+}
+
+export interface ProductVariantDimension {
+  name: string;
+  value: string;
+}
+export interface ProductVariantImage {
+  link: string;
+  variant: string;
+}
+
+export interface ProductVariant {
+  asin: string;
+  title: string;
+  link: string;
+  dimensions: ProductVariantDimension[];
+  main_image: string;
+  images: ProductVariantImage[];
+  price?: ProductPrice;
+  availability?: {
+    status: string;
+  };
 }

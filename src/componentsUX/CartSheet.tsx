@@ -117,6 +117,14 @@ function CartSheet() {
                   <p className="text-sm text-muted-foreground">
                     Quantity: {item.quantity}
                   </p>
+                  {item.variant_dimensions && (
+                    <p className="text-sm text-muted-foreground">
+                      Variant:{" "}
+                      {Object.entries(item.variant_dimensions)
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join(", ")}
+                    </p>
+                  )}
                   <p className="font-bold text-lg text-green-600">
                     ${(item.price * item.quantity).toFixed(2)} MXN
                     <span className="text-sm font-normal ml-1">
