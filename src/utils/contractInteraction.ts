@@ -12,6 +12,7 @@ import {
   CONTRACT_ADDRESS,
   RPC_URL,
   USDC_ADDRESS,
+  CONTRACT_CHAIN_ID,
 } from "../config/contractConfig";
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
@@ -64,6 +65,11 @@ async function checkAllowance(
 }
 
 export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
+  const isCorrectNetwork = await checkNetwork(wallet);
+  if (!isCorrectNetwork) {
+    throw new Error("Please switch to the Base network before proceeding.");
+  }
+
   await initializeClients(wallet);
   const [address] = await walletClient.getAddresses();
 
@@ -87,6 +93,11 @@ export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
 }
 
 export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
+  const isCorrectNetwork = await checkNetwork(wallet);
+  if (!isCorrectNetwork) {
+    throw new Error("Please switch to the Base network before proceeding.");
+  }
+
   try {
     await initializeClients(wallet);
     const [address] = await walletClient.getAddresses();
@@ -144,4 +155,8 @@ export async function shipOrderOnChain(wallet: WalletType, orderId: bigint) {
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
   return receipt;
+}
+async function checkNetwork(wallet: WalletType): Promise<boolean> {
+  const walletChainIdNumber = parseInt(wallet.chainId.split(":")[1]);
+  return walletChainIdNumber === CONTRACT_CHAIN_ID;
 }

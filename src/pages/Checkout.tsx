@@ -71,46 +71,85 @@ export default function Checkout() {
       const wallet = wallets[0];
       const amountInUSDCUnits = convertToWei(totalUSD);
 
-      const approvalHash = await approveUSDCSpending(wallet, amountInUSDCUnits);
-      if (approvalHash) {
-        toast({
-          description: `USDC spending approved. Transaction hash: ${approvalHash}`,
-          duration: 5000,
-        });
+      try {
+        const approvalHash = await approveUSDCSpending(
+          wallet,
+          amountInUSDCUnits,
+        );
+        if (approvalHash) {
+          toast({
+            description: `USDC spending approved. Transaction hash: ${approvalHash}`,
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.log("Error in approveUSDCSpending:", error);
+        if (
+          error instanceof Error &&
+          error.message.includes("switch to the Base network")
+        ) {
+          toast({
+            title: "Wrong Network",
+            description:
+              "Please switch to the Base network in your wallet before proceeding.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        throw error;
       }
 
-      const { hash: createOrderHash, orderId } = await createOrderOnChain(
-        wallet,
-        amountInUSDCUnits,
-      );
+      try {
+        const { hash: createOrderHash, orderId } = await createOrderOnChain(
+          wallet,
+          amountInUSDCUnits,
+        );
 
-      toast({
-        description: `Order created on blockchain. Order ID: ${orderId}, Transaction hash: ${createOrderHash}`,
-        duration: 5000,
-      });
+        toast({
+          description: `Order created on blockchain. Order ID: ${orderId}, Transaction hash: ${createOrderHash}`,
+          duration: 5000,
+        });
 
-      const orderDetails: CreateOrderRequest = {
-        user_id: userData.privy_id,
-        items: orderItems,
-        total_amount: totalMXN,
-        total_amount_usd: totalUSD,
-        full_name: fullName,
-        street: street,
-        postal_code: postalCode,
-        phone: phone,
-        delivery_instructions: deliveryInstructions,
-        blockchain_order_id: orderId.toString(),
-      };
+        const orderDetails: CreateOrderRequest = {
+          user_id: userData.privy_id,
+          items: orderItems,
+          total_amount: totalMXN,
+          total_amount_usd: totalUSD,
+          full_name: fullName,
+          street: street,
+          postal_code: postalCode,
+          phone: phone,
+          delivery_instructions: deliveryInstructions,
+          blockchain_order_id: orderId.toString(),
+        };
 
-      await createOrder(orderDetails);
+        await createOrder(orderDetails);
 
-      toast({
-        title: "Order Created",
-        description: `Your order #${orderId} has been created successfully.`,
-      });
+        toast({
+          title: "Order Created",
+          description: `Your order #${orderId} has been created successfully.`,
+        });
 
-      await refetch();
-      navigate("/my-orders");
+        await refetch();
+        navigate("/my-orders");
+      } catch (error) {
+        console.log("Error in createOrderOnChain or createOrder:", error);
+        if (
+          error instanceof Error &&
+          error.message.includes("switch to the Base network")
+        ) {
+          toast({
+            title: "Wrong Network",
+            description:
+              "Please switch to the Base network in your wallet before proceeding.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        throw error; // Re-lanzar otros errores
+      }
     } catch (error) {
       console.error("Error creating order:", error);
       toast({
