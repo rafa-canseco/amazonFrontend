@@ -28,6 +28,7 @@ interface EthereumProvider {
 }
 interface WalletType {
   getEthereumProvider: () => Promise<EthereumProvider>;
+  chainId?: string;
 }
 
 let publicClient: PublicClient;
@@ -157,6 +158,12 @@ export async function shipOrderOnChain(wallet: WalletType, orderId: bigint) {
   return receipt;
 }
 async function checkNetwork(wallet: WalletType): Promise<boolean> {
+  if (!wallet.chainId) {
+    console.error("Wallet chainId is undefined");
+    return false;
+  }
+
   const walletChainIdNumber = parseInt(wallet.chainId.split(":")[1]);
+
   return walletChainIdNumber === CONTRACT_CHAIN_ID;
 }
