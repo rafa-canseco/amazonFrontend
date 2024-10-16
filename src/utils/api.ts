@@ -12,7 +12,7 @@ import {
   Order,
   ExchangeRate,
 } from "../types/types";
-import { API_BASE_URL } from "../config/contractConfig";
+import { API_BASE_URL, LANDING_HOOK } from "../config/contractConfig";
 
 export const searchProducts = async (
   query: string,
@@ -194,4 +194,29 @@ export const fetchExchangeRate = async (): Promise<ExchangeRate> => {
   }
 
   return response.json();
+};
+
+export const getStats = async (): Promise<{
+  users: number;
+  totalPurchases: number;
+}> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/stats`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    throw error;
+  }
+};
+
+export const sendFeedback = async (country: string, network: string) => {
+  const timestamp = new Date().toISOString();
+  const data = { country, network, timestamp };
+
+  try {
+    await axios.post(LANDING_HOOK, data);
+  } catch (error) {
+    console.error("Error sending feedback:", error);
+    throw error;
+  }
 };
