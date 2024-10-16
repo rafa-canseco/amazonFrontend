@@ -14,9 +14,9 @@ import {
   USDC_ADDRESS,
 } from "../config/contractConfig";
 import { parseUnits } from "viem";
-import { baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
 
-const WEI_DECIMALS = 18;
+const WEI_DECIMALS = 6;
 
 export function convertToWei(amount: number): bigint {
   return parseUnits(amount.toString(), WEI_DECIMALS);
@@ -35,7 +35,7 @@ let walletClient: WalletClient;
 async function initializeClients(wallet?: WalletType) {
   if (!publicClient) {
     publicClient = createPublicClient({
-      chain: baseSepolia,
+      chain: base,
       transport: http(RPC_URL),
     }) as any;
   }
@@ -43,7 +43,7 @@ async function initializeClients(wallet?: WalletType) {
   if (wallet && !walletClient) {
     const provider = await wallet.getEthereumProvider();
     walletClient = createWalletClient({
-      chain: baseSepolia,
+      chain: base,
       transport: custom(provider),
     });
   }
@@ -78,7 +78,7 @@ export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
     functionName: "approve",
     args: [CONTRACT_ADDRESS, amount],
     account: address,
-    chain: baseSepolia,
+    chain: base,
   });
 
   await publicClient.waitForTransactionReceipt({ hash });
