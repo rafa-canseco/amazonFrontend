@@ -134,3 +134,24 @@ button:focus-visible {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium inline-flex items-center justify-center tracking-tight;
+  }
+
+  .btn-primary {
+    @apply bg-white text-black;
+  }
+
+  .btn-text {
+    @apply text-white bg-transparent;
+  }
+
+  .logo-ticker {
+    @apply h-8 w-auto;
+  }
+  .tag {
+    @apply text-sm inline-flex border border-[#222]/10 px-3 rounded-lg tracking-tight absolute -top-16 left-1/2 transform -translate-x-1/2;
+  }
+}
