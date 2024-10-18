@@ -6,6 +6,8 @@ import {
   http,
   PublicClient,
   WalletClient,
+  parseUnits,
+  getContract,
 } from "viem";
 import ERC20abi from "../abi/ERC20abi.json";
 import {
@@ -13,12 +15,14 @@ import {
   RPC_URL,
   USDC_ADDRESS,
   CONTRACT_CHAIN_ID,
+  AAVE_POOL_ADDRESS,
+  MULTICALL2_ADDRESS,
 } from "../config/contractConfig";
-import { parseUnits } from "viem";
-import { base } from "viem/chains";
-
+import { base ,sepolia} from "viem/chains";
+import { Pool,  InterestRate } from '@aave/contract-helpers';
+import MulticallABI from "../abi/Multicall.json";
+import AAVE_POOL_ABI from "../abi/AavePoolABI.json";
 const WEI_DECIMALS = 6;
-
 export function convertToWei(amount: number): bigint {
   return parseUnits(amount.toString(), WEI_DECIMALS);
 }
@@ -37,7 +41,7 @@ let walletClient: WalletClient;
 async function initializeClients(wallet?: WalletType) {
   if (!publicClient) {
     publicClient = createPublicClient({
-      chain: base,
+      chain: sepolia,
       transport: http(RPC_URL),
     }) as any;
   }
@@ -45,7 +49,7 @@ async function initializeClients(wallet?: WalletType) {
   if (wallet && !walletClient) {
     const provider = await wallet.getEthereumProvider();
     walletClient = createWalletClient({
-      chain: base,
+      chain: sepolia,
       transport: custom(provider),
     });
   }
@@ -66,10 +70,10 @@ async function checkAllowance(
 }
 
 export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
-  const isCorrectNetwork = await checkNetwork(wallet);
-  if (!isCorrectNetwork) {
-    throw new Error("Please switch to the Base network before proceeding.");
-  }
+  // const isCorrectNetwork = await checkNetwork(wallet);
+  // if (!isCorrectNetwork) {
+  //   throw new Error("Please switch to the Base network before proceeding.");
+  // }
 
   await initializeClients(wallet);
   const [address] = await walletClient.getAddresses();
@@ -85,7 +89,7 @@ export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
     functionName: "approve",
     args: [CONTRACT_ADDRESS, amount],
     account: address,
-    chain: base,
+    chain: sepolia,
   });
 
   await publicClient.waitForTransactionReceipt({ hash });
@@ -94,10 +98,10 @@ export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
 }
 
 export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
-  const isCorrectNetwork = await checkNetwork(wallet);
-  if (!isCorrectNetwork) {
-    throw new Error("Please switch to the Base network before proceeding.");
-  }
+  // const isCorrectNetwork = await checkNetwork(wallet);
+  // if (!isCorrectNetwork) {
+  //   throw new Error("Please switch to the Base network before proceeding.");
+  // }
 
   try {
     await initializeClients(wallet);
@@ -157,6 +161,7 @@ export async function shipOrderOnChain(wallet: WalletType, orderId: bigint) {
 
   return receipt;
 }
+
 async function checkNetwork(wallet: WalletType): Promise<boolean> {
   if (!wallet.chainId) {
     console.error("Wallet chainId is undefined");
@@ -167,3 +172,48 @@ async function checkNetwork(wallet: WalletType): Promise<boolean> {
 
   return walletChainIdNumber === CONTRACT_CHAIN_ID;
 }
+
+export async function payWithAave(
+  wallet: WalletType,
+  amount: bigint,
+) {
+  try {
+    await initializeClients(wallet);
+    const [address] = await walletClient.getAddresses();
+
+    const { request } = await publicClient.simulateContract({
+      address: CONTRACT_ADDRESS,
+      abi: AmazonOrderSystemABI as any,
+      functionName: "createOrderWithLoan",
+      args: [amount],
+      account: address,
+    });
+
+    const hash = await walletClient.writeContract(request);
+
+    const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+    const events = await publicClient.getContractEvents({
+      address: CONTRACT_ADDRESS,
+      abi: AmazonOrderSystemABI,
+      fromBlock: receipt.blockNumber,
+      toBlock: receipt.blockNumber,
+      eventName: "OrderCreated",
+    });
+    const orderCreatedEvent = events.find(
+      (event) => event.transactionHash === hash,
+    ) as any;
+
+    if (!orderCreatedEvent) {
+      throw new Error("OrderCreated event not found for the transaction");
+    }
+
+    const orderId = orderCreatedEvent.args.orderId as any;
+
+    return { hash, orderId };
+  } catch (error) {
+    console.error("Error creating order on chain:", error);
+    throw error;
+  }
+}
+

@@ -9,15 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { CreateOrderRequest, OrderItem } from "../types/types";
+import { CreateOrderRequest, OrderItem, BorrowCapacity } from "../types/types";
 import Navbar from "./Navbar";
 import { useWallets } from "@privy-io/react-auth";
 import {
   approveUSDCSpending,
   createOrderOnChain,
   convertToWei,
+  payWithAave,
 } from "../utils/contractInteraction";
 import { useExchangeRate } from "../hooks/useExchangeRate";
+import { getUserBorrowingCapacity} from "../utils/aaveInteractions";
+import { USDC_ADDRESS } from "../config/contractConfig";
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -33,6 +36,10 @@ export default function Checkout() {
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { wallets } = useWallets();
+  const [borrowCapacity, setBorrowCapacity] = useState<BorrowCapacity | null>(
+    null,
+  );
+  const [isLoadingAave, setIsLoadingAave] = useState(false);
 
   const { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD } =
     useMemo(() => {
@@ -54,8 +61,98 @@ export default function Checkout() {
 
   if (isLoadingExchangeRate) return <div>Loading...</div>;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePayWithAave = async () => {
+    if (!userData || !wallets[0]) return;
+
+    setIsLoadingAave(true);
+    try {
+      const capacity = await getUserBorrowingCapacity(wallets[0], USDC_ADDRESS);
+      setBorrowCapacity(capacity as BorrowCapacity);
+      toast({
+        title: "Aave Borrowing Capacity",
+        description: `Max borrow amount: ${capacity.maxBorrowAmount.toFixed(2)} USDC`,
+      });
+    } catch (error) {
+      console.error("Error fetching Aave borrowing capacity:", error);
+      let errorMessage = "Unable to fetch Aave borrowing capacity. ";
+      if (error instanceof Error) {
+        errorMessage += error.message;
+      }
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingAave(false);
+    }
+  };
+
+  const handleConfirmAavePayment = async () => {
+    if (!userData || !wallets[0] || !borrowCapacity) return;
+  
+    setIsSubmitting(true);
+    try {
+      const wallet = wallets[0];
+      const amountInUSDCUnits = convertToWei(totalUSD);
+  
+      await approveUSDCSpending(wallet, amountInUSDCUnits);
+    
+  
+      // Realizar el préstamo de Aave y crear la orden en la blockchain
+      const { hash, orderId } = await payWithAave(wallet, amountInUSDCUnits);
+  
+      toast({
+        title: "Aave Payment Successful",
+        description: `Successfully borrowed and created order. Transaction hash: ${hash}`,
+      });
+  
+      // Crear la orden en el backend
+      const orderItems: OrderItem[] = cart.items.map((item) => ({
+        asin: item.asin,
+        quantity: item.quantity,
+        price: item.price,
+        title: item.title,
+        image_url: item.image_url,
+        variant_asin: item.variant_asin,
+        variant_dimensions: item.variant_dimensions,
+      }));
+  
+      const orderDetails: CreateOrderRequest = {
+        user_id: userData.privy_id,
+        items: orderItems,
+        total_amount: totalMXN,
+        total_amount_usd: totalUSD,
+        full_name: fullName,
+        street: street,
+        postal_code: postalCode,
+        phone: phone,
+        delivery_instructions: deliveryInstructions,
+        blockchain_order_id: orderId.toString(),
+      };
+  
+      await createOrder(orderDetails);
+  
+      toast({
+        title: "Order Created",
+        description: `Your order #${orderId} has been created successfully.`,
+      });
+  
+      await refetch();
+      navigate("/my-orders");
+    } catch (error) {
+      console.error("Error in Aave payment process:", error);
+      toast({
+        title: "Error",
+        description: "There was an error processing your Aave payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!userData || !cart) return;
 
     setIsSubmitting(true);
@@ -72,20 +169,20 @@ export default function Checkout() {
 
       const wallet = wallets[0];
       const amountInUSDCUnits = convertToWei(totalUSD);
+      console.log(amountInUSDCUnits)
 
       try {
-        const approvalHash = await approveUSDCSpending(
+        const { hash: multicallHash, orderId } = await approveAndCreateOrderMulticall(
           wallet,
-          amountInUSDCUnits,
+          amountInUSDCUnits
         );
-        if (approvalHash) {
-          toast({
-            description: `USDC spending approved. Transaction hash: ${approvalHash}`,
-            duration: 5000,
-          });
-        }
+
+        toast({
+          description: `Order approved and created on blockchain. Order ID: ${orderId}, Transaction hash: ${multicallHash}`,
+          duration: 5000,
+        });
       } catch (error) {
-        console.log("Error in approveUSDCSpending:", error);
+        console.log("Error in approveAndCreateOrderMulticall:", error);
         if (
           error instanceof Error &&
           error.message.includes("switch to the Base network")
@@ -102,56 +199,28 @@ export default function Checkout() {
         throw error;
       }
 
-      try {
-        const { hash: createOrderHash, orderId } = await createOrderOnChain(
-          wallet,
-          amountInUSDCUnits,
-        );
+      const orderDetails: CreateOrderRequest = {
+        user_id: userData.privy_id,
+        items: orderItems,
+        total_amount: totalMXN,
+        total_amount_usd: totalUSD,
+        full_name: fullName,
+        street: street,
+        postal_code: postalCode,
+        phone: phone,
+        delivery_instructions: deliveryInstructions,
+        blockchain_order_id: orderId.toString(),
+      };
 
-        toast({
-          description: `Order created on blockchain. Order ID: ${orderId}, Transaction hash: ${createOrderHash}`,
-          duration: 5000,
-        });
+      await createOrder(orderDetails);
 
-        const orderDetails: CreateOrderRequest = {
-          user_id: userData.privy_id,
-          items: orderItems,
-          total_amount: totalMXN,
-          total_amount_usd: totalUSD,
-          full_name: fullName,
-          street: street,
-          postal_code: postalCode,
-          phone: phone,
-          delivery_instructions: deliveryInstructions,
-          blockchain_order_id: orderId.toString(),
-        };
+      toast({
+        title: "Order Created",
+        description: `Your order #${orderId} has been created successfully.`,
+      });
 
-        await createOrder(orderDetails);
-
-        toast({
-          title: "Order Created",
-          description: `Your order #${orderId} has been created successfully.`,
-        });
-
-        await refetch();
-        navigate("/my-orders");
-      } catch (error) {
-        console.log("Error in createOrderOnChain or createOrder:", error);
-        if (
-          error instanceof Error &&
-          error.message.includes("switch to the Base network")
-        ) {
-          toast({
-            title: "Wrong Network",
-            description:
-              "Please switch to the Base network in your wallet before proceeding.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-        throw error; // Re-lanzar otros errores
-      }
+      await refetch();
+      navigate("/my-orders");
     } catch (error) {
       console.error("Error creating order:", error);
       toast({
@@ -217,6 +286,38 @@ export default function Checkout() {
               "Complete Order"
             )}
           </Button>
+          <Button
+            type="button"
+            className="w-full mt-2"
+            onClick={handlePayWithAave}
+            disabled={isLoadingAave}
+          >
+            {isLoadingAave ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading Aave Data...
+              </>
+            ) : (
+              "Can I pay with Aave? 🤔"
+            )}
+          </Button>
+          {borrowCapacity && borrowCapacity.maxBorrowAmount > totalUSD && (
+            <Button
+              type="button"
+              className="w-full mt-2"
+              onClick={handleConfirmAavePayment}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing Aave Payment...
+                </>
+              ) : (
+                "Ok! Pay with my credit on Aave"
+              )}
+            </Button>
+          )}
         </form>
         <div>
           <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
@@ -251,6 +352,22 @@ export default function Checkout() {
               Total: ${totalMXN.toFixed(2)} MXN (${totalUSD.toFixed(2)} USD)
             </p>
           </div>
+          {borrowCapacity && (
+            <Card className="mt-4">
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-2">Aave Borrowing Capacity</h3>
+                <p>
+                  {"Max Borrow Amount: "}
+                  {borrowCapacity.maxBorrowAmount.toFixed(2)} USDC
+                </p>
+                <p>
+                  {"Current Liquidation Threshold: "}
+                  {borrowCapacity.currentLiquidationThreshold}
+                </p>
+                <p>Health Factor: {borrowCapacity.healthFactor}</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

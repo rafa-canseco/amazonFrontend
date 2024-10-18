@@ -175,3 +175,12 @@ export interface ProductVariant {
     status: string;
   };
 }
+
+export interface BorrowCapacity {
+  maxBorrowAmount: number;
+  currentLiquidationThreshold: string;
+  totalBorrowUSD: number;
+  totalCollateralUSD: number;
+  healthFactor: string;
+  netWorthUSD: number;
+}

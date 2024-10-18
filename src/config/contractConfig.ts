@@ -11,3 +11,5 @@ export const ADMIN_PRIVY_ID = import.meta.env.VITE_ADMIN_PRIVY_ID || "";
 export const API_BASE_URL = import.meta.env.VITE_SERVER_HOST || "";
 export const LANDING_HOOK = import.meta.env.VITE_MAKE_LANDING_HOOK;
 export const FEEDBACK_HOOK = import.meta.env.VITE_MAKE_FEEDBACK_HOOK;
+export const MULTICALL2_ADDRESS = import.meta.env.VITE_MULTICALL2_ADDRESS;
+export const AAVE_POOL_ADDRESS = import.meta.env.VITE_AAVE_POOL_ADDRESS;
