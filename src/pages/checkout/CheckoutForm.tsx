@@ -42,7 +42,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
   showAavePaymentButton,
 }) => {
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4 mx-40">
       <Input
         placeholder="Full Name"
         value={fullName}

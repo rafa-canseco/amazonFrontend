@@ -7,10 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { CreateOrderRequest, OrderItem, BorrowCapacity } from "../types/types";
 import { useWallets } from "@privy-io/react-auth";
 import {
-  approveUSDCSpending,
   convertToWei,
   createOrderOnChain,
-  chekAllowance,
 } from "../utils/contractInteraction";
 import { useExchangeRate } from "../hooks/useExchangeRate";
 import { getUserBorrowingCapacity, borrowFromAave } from "../utils/aaveInteractions";
@@ -93,9 +91,7 @@ export function useCheckout() {
     setIsSubmitting(true);
     try {
       const wallet = wallets[0];
-      const amountInUSDCUnits = convertToWei(totalUSD);
   
-
       const borrowTx = await borrowFromAave(wallet, totalUSD, USDC_ADDRESS);
       await borrowTx.wait();
       toast({
@@ -155,10 +151,8 @@ export function useCheckout() {
     });
   
   
-      // Añadir el blockchain_order_id a orderDetails
       orderDetails.blockchain_order_id = orderId.toString();
   
-      // Crear la orden en el backend
       await createOrder(orderDetails);
   
       toast({
