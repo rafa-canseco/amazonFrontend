@@ -22,7 +22,12 @@ import { base ,sepolia} from "viem/chains";
 import { Pool,  InterestRate } from '@aave/contract-helpers';
 import MulticallABI from "../abi/Multicall.json";
 import AAVE_POOL_ABI from "../abi/AavePoolABI.json";
+
+
 const WEI_DECIMALS = 6;
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+
 export function convertToWei(amount: number): bigint {
   return parseUnits(amount.toString(), WEI_DECIMALS);
 }
@@ -92,9 +97,9 @@ export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
     chain: sepolia,
   });
 
-  await publicClient.waitForTransactionReceipt({ hash });
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
-  return hash;
+  return { hash, receipt };
 }
 
 export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
@@ -106,6 +111,11 @@ export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
   try {
     await initializeClients(wallet);
     const [address] = await walletClient.getAddresses();
+    
+    const approveTx = await approveUSDCSpending(wallet, amount);
+    if (approveTx) {
+      console.log("USDC spending approved. Hash:", approveTx.hash);
+    }
 
     const { request } = await publicClient.simulateContract({
       address: CONTRACT_ADDRESS,
@@ -118,6 +128,8 @@ export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
     const hash = await walletClient.writeContract(request);
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
+    
+    await sleep(2000);
 
     const events = await publicClient.getContractEvents({
       address: CONTRACT_ADDRESS,
@@ -126,6 +138,7 @@ export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
       toBlock: receipt.blockNumber,
       eventName: "OrderCreated",
     });
+    
     const orderCreatedEvent = events.find(
       (event) => event.transactionHash === hash,
     ) as any;
@@ -136,7 +149,7 @@ export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
 
     const orderId = orderCreatedEvent.args.orderId as any;
 
-    return { hash, orderId };
+    return { hash, orderId, receipt };
   } catch (error) {
     console.error("Error creating order on chain:", error);
     throw error;
@@ -171,49 +184,5 @@ async function checkNetwork(wallet: WalletType): Promise<boolean> {
   const walletChainIdNumber = parseInt(wallet.chainId.split(":")[1]);
 
   return walletChainIdNumber === CONTRACT_CHAIN_ID;
-}
-
-export async function payWithAave(
-  wallet: WalletType,
-  amount: bigint,
-) {
-  try {
-    await initializeClients(wallet);
-    const [address] = await walletClient.getAddresses();
-
-    const { request } = await publicClient.simulateContract({
-      address: CONTRACT_ADDRESS,
-      abi: AmazonOrderSystemABI as any,
-      functionName: "createOrderWithLoan",
-      args: [amount],
-      account: address,
-    });
-
-    const hash = await walletClient.writeContract(request);
-
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
-
-    const events = await publicClient.getContractEvents({
-      address: CONTRACT_ADDRESS,
-      abi: AmazonOrderSystemABI,
-      fromBlock: receipt.blockNumber,
-      toBlock: receipt.blockNumber,
-      eventName: "OrderCreated",
-    });
-    const orderCreatedEvent = events.find(
-      (event) => event.transactionHash === hash,
-    ) as any;
-
-    if (!orderCreatedEvent) {
-      throw new Error("OrderCreated event not found for the transaction");
-    }
-
-    const orderId = orderCreatedEvent.args.orderId as any;
-
-    return { hash, orderId };
-  } catch (error) {
-    console.error("Error creating order on chain:", error);
-    throw error;
-  }
 }
 
