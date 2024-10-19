@@ -1,16 +1,12 @@
 import { ethers } from "ethers";
-import {
-  UiPoolDataProvider,
-  ChainId,
-  Pool,
-  InterestRate,
-} from "@aave/contract-helpers";
+import { UiPoolDataProvider, Pool, InterestRate } from "@aave/contract-helpers";
 import * as markets from "@bgd-labs/aave-address-book";
 import { formatReserves, formatUserSummary } from "@aave/math-utils";
 import {
   RPC_URL,
   UI_POOL_DATA_PROVIDER_ADDRESS,
   POOL_ADDRESSES_PROVIDER,
+  CONTRACT_CHAIN_ID,
 } from "../config/contractConfig";
 import dayjs from "dayjs";
 
@@ -44,7 +40,7 @@ export async function getUserBorrowingCapacity(
     const poolDataProviderContract = new UiPoolDataProvider({
       uiPoolDataProviderAddress: UI_POOL_DATA_PROVIDER_ADDRESS,
       provider,
-      chainId: ChainId.sepolia, /// change variable
+      chainId: CONTRACT_CHAIN_ID,
     });
 
     const reserves = await poolDataProviderContract.getReservesHumanized({
@@ -111,6 +107,7 @@ export async function getUserBorrowingCapacity(
     throw error;
   }
 }
+
 export async function borrowFromAave(
   wallet: WalletType,
   amount: number,
@@ -125,8 +122,8 @@ export async function borrowFromAave(
     const userAddress = await signer.getAddress();
 
     const pool = new Pool(providerInstance, {
-      POOL: markets.AaveV3Sepolia.POOL,
-      WETH_GATEWAY: markets.AaveV3Sepolia.WETH_GATEWAY,
+      POOL: markets.AaveV3Base.POOL,
+      WETH_GATEWAY: markets.AaveV3Base.WETH_GATEWAY,
     });
 
     const txs = await pool.borrow({

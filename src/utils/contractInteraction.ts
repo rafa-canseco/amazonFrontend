@@ -14,15 +14,11 @@ import {
   RPC_URL,
   USDC_ADDRESS,
   CONTRACT_CHAIN_ID,
-
 } from "../config/contractConfig";
-import { base ,sepolia} from "viem/chains";
-
-
+import { base } from "viem/chains";
 
 const WEI_DECIMALS = 6;
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function convertToWei(amount: number): bigint {
   return parseUnits(amount.toString(), WEI_DECIMALS);
@@ -42,7 +38,7 @@ let walletClient: WalletClient;
 async function initializeClients(wallet?: WalletType) {
   if (!publicClient) {
     publicClient = createPublicClient({
-      chain: sepolia,
+      chain: base,
       transport: http(RPC_URL),
     }) as any;
   }
@@ -50,7 +46,7 @@ async function initializeClients(wallet?: WalletType) {
   if (wallet && !walletClient) {
     const provider = await wallet.getEthereumProvider();
     walletClient = createWalletClient({
-      chain: sepolia,
+      chain: base,
       transport: custom(provider),
     });
   }
@@ -71,10 +67,10 @@ async function checkAllowance(
 }
 
 export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
-  // const isCorrectNetwork = await checkNetwork(wallet);
-  // if (!isCorrectNetwork) {
-  //   throw new Error("Please switch to the Base network before proceeding.");
-  // }
+  const isCorrectNetwork = await checkNetwork(wallet);
+  if (!isCorrectNetwork) {
+    throw new Error("Please switch to the Base network before proceeding.");
+  }
 
   await initializeClients(wallet);
   const [address] = await walletClient.getAddresses();
@@ -90,7 +86,7 @@ export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
     functionName: "approve",
     args: [CONTRACT_ADDRESS, amount],
     account: address,
-    chain: sepolia,
+    chain: base,
   });
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
@@ -99,15 +95,15 @@ export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
 }
 
 export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
-  // const isCorrectNetwork = await checkNetwork(wallet);
-  // if (!isCorrectNetwork) {
-  //   throw new Error("Please switch to the Base network before proceeding.");
-  // }
+  const isCorrectNetwork = await checkNetwork(wallet);
+  if (!isCorrectNetwork) {
+    throw new Error("Please switch to the Base network before proceeding.");
+  }
 
   try {
     await initializeClients(wallet);
     const [address] = await walletClient.getAddresses();
-    
+
     const approveTx = await approveUSDCSpending(wallet, amount);
     if (approveTx) {
       console.log("USDC spending approved. Hash:", approveTx.hash);
@@ -124,7 +120,7 @@ export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
     const hash = await walletClient.writeContract(request);
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    
+
     await sleep(2000);
 
     const events = await publicClient.getContractEvents({
@@ -134,7 +130,7 @@ export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
       toBlock: receipt.blockNumber,
       eventName: "OrderCreated",
     });
-    
+
     const orderCreatedEvent = events.find(
       (event) => event.transactionHash === hash,
     ) as any;
@@ -181,4 +177,3 @@ async function checkNetwork(wallet: WalletType): Promise<boolean> {
 
   return walletChainIdNumber === CONTRACT_CHAIN_ID;
 }
-
