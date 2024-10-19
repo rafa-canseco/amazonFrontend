@@ -37,7 +37,7 @@ export function useCheckout() {
             (sum, item) => sum + item.price * item.quantity,
             0,
           ) || 0;
-        const feeMXN = subtotalMXN * 0.03; // 3% fee
+        const feeMXN = subtotalMXN * 0.03;
         const totalMXN = subtotalMXN + feeMXN;
   
         const exchangeRateValue = exchangeRate?.valor || 1;
@@ -54,7 +54,7 @@ export function useCheckout() {
     setIsLoadingAave(true);
     try {
       const capacity = await getUserBorrowingCapacity(wallets[0], USDC_ADDRESS);
-      setBorrowCapacity(capacity as BorrowCapacity);
+      setBorrowCapacity(capacity as unknown as BorrowCapacity);
       toast({
         title: "Aave Borrowing Capacity",
         description: `Max borrow amount: ${capacity.maxBorrowAmount.toFixed(2)} USDC`,
@@ -119,9 +119,10 @@ export function useCheckout() {
         postal_code: postalCode,
         phone: phone,
         delivery_instructions: deliveryInstructions,
+        blockchain_order_id: "",
       };
   
-      await handleSubmit(e, orderDetails, true);
+      await handleSubmit(e, orderDetails);
     } catch (error) {
       console.error("Error in Aave payment process:", error);
       toast({
@@ -134,7 +135,7 @@ export function useCheckout() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent, orderDetails: CreateOrderRequest, isAavePayment = false) => {
+  const handleSubmit = async (e: React.FormEvent, orderDetails: CreateOrderRequest) => {
     e.preventDefault();
     if (!userData || !cart || !wallets[0]) return;
   
@@ -143,7 +144,7 @@ export function useCheckout() {
       const wallet = wallets[0];
       const amountInUSDCUnits = convertToWei(orderDetails.total_amount_usd);
   
-      const { hash, orderId, receipt } = await createOrderOnChain(wallet, amountInUSDCUnits);
+      const { hash, orderId } = await createOrderOnChain(wallet, amountInUSDCUnits);
     
     toast({
       description: `Order created on blockchain. Order ID: ${orderId}, Transaction hash: ${hash}`,

@@ -7,7 +7,6 @@ import {
   PublicClient,
   WalletClient,
   parseUnits,
-  getContract,
 } from "viem";
 import ERC20abi from "../abi/ERC20abi.json";
 import {
@@ -15,13 +14,10 @@ import {
   RPC_URL,
   USDC_ADDRESS,
   CONTRACT_CHAIN_ID,
-  AAVE_POOL_ADDRESS,
-  MULTICALL2_ADDRESS,
+
 } from "../config/contractConfig";
 import { base ,sepolia} from "viem/chains";
-import { Pool,  InterestRate } from '@aave/contract-helpers';
-import MulticallABI from "../abi/Multicall.json";
-import AAVE_POOL_ABI from "../abi/AavePoolABI.json";
+
 
 
 const WEI_DECIMALS = 6;

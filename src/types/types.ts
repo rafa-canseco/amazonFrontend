@@ -181,6 +181,6 @@ export interface BorrowCapacity {
   currentLiquidationThreshold: string;
   totalBorrowUSD: number;
   totalCollateralUSD: number;
-  healthFactor: string;
+  healthFactor: number;
   netWorthUSD: number;
 }

@@ -5,7 +5,7 @@ interface AaveBorrowingInfoProps {
   borrowCapacity: {
     maxBorrowAmount: number;
     currentLiquidationThreshold: string;
-    healthFactor: string;
+    healthFactor: number;
   } | null;
 }
 
@@ -24,7 +24,7 @@ export const AaveBorrowingInfo: React.FC<AaveBorrowingInfoProps> = ({ borrowCapa
           {"Current Liquidation Threshold: "}
           {borrowCapacity.currentLiquidationThreshold}
         </p>
-        <p>Health Factor: {borrowCapacity.healthFactor}</p>
+        <p>Health Factor: {borrowCapacity.healthFactor.toFixed(2)}</p>
       </CardContent>
     </Card>
   );
