@@ -17,10 +17,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [authStatus, setAuthStatus] = useState<
+    "loading" | "authenticated" | "unauthenticated"
+  >("loading");
 
   useEffect(() => {
     const checkAndRegisterUser = async () => {
       if (!ready) {
+        setAuthStatus("loading");
         return;
       }
 
@@ -46,9 +50,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             setUserData({ privy_id: user.id, wallet_address: walletAddress });
             setIsRegistered(true);
           }
+          setAuthStatus("authenticated");
         } else {
           setUserData(null);
           setIsRegistered(false);
+          setAuthStatus("unauthenticated");
         }
       } catch (err) {
         setError(
@@ -56,6 +62,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         );
         setIsRegistered(false);
         setUserData(null);
+        setAuthStatus("unauthenticated");
       } finally {
         setIsLoading(false);
       }
@@ -64,6 +71,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     checkAndRegisterUser();
   }, [ready, user]);
 
+  const isAuthenticated = () => {
+    return !!userData?.privy_id;
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -71,6 +82,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         error,
         userData,
+        authStatus,
+        isAuthenticated,
       }}
     >
       {children}

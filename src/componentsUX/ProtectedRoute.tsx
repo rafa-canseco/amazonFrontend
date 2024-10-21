@@ -9,13 +9,13 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { authenticated, ready } = usePrivy();
-  const { isRegistered, isLoading } = useUser();
+  const { isLoading, authStatus } = useUser();
 
   if (!ready || isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!authenticated || !isRegistered) {
+  if (!authenticated || authStatus === "unauthenticated") {
     return <Navigate to="/" replace />;
   }
 

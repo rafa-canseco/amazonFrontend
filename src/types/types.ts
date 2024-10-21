@@ -64,6 +64,8 @@ export interface UserContextType {
   isLoading: boolean;
   error: string | null;
   userData: UserData | null;
+  authStatus: "loading" | "authenticated" | "unauthenticated";
+  isAuthenticated: () => boolean;
 }
 
 export interface CartItem {
@@ -72,6 +74,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image_url: string;
+  product_link: string;
   variant_asin?: string;
   variant_dimensions?: { [key: string]: string };
 }
@@ -118,6 +121,7 @@ export interface OrderItem {
   price: number;
   title: string;
   image_url?: string;
+  product_link: string;
   variant_asin?: string;
   variant_dimensions?: { [key: string]: string };
 }
@@ -127,7 +131,7 @@ export interface Order {
   user_id: string;
   total_amount: number;
   total_amount_usd: number;
-  status: string;
+  status: "order received" | "shipped" | "delivered";
   created_at: string;
   items: OrderItem[];
   full_name: string;

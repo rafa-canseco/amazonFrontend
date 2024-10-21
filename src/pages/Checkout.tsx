@@ -1,13 +1,16 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
+import { Navigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { useCheckout } from "../hooks/useCheckout";
+import { useUser } from "../contexts/UserContext";
 import { CreateOrderRequest } from "../types/types";
 import { CheckoutForm } from "./checkout/CheckoutForm";
 import { OrderSummary } from "./checkout/OrderSummary";
 import { AaveBorrowingInfo } from "./checkout/AaveBorrowingInfo";
 
 export default function Checkout() {
+  const { userData, authStatus } = useUser();
   const {
     fullName,
     setFullName,
@@ -36,6 +39,14 @@ export default function Checkout() {
     handleSubmit,
   } = useCheckout();
 
+  if (authStatus === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (authStatus === "unauthenticated" || !userData) {
+    return <Navigate to="/" replace />;
+  }
+
   if (isLoading || isLoadingExchangeRate) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -49,7 +60,7 @@ export default function Checkout() {
     if (!cart) return;
 
     const orderDetails: CreateOrderRequest = {
-      user_id: "",
+      user_id: userData.privy_id,
       items: cart.items,
       total_amount: totalMXN,
       total_amount_usd: totalUSD,
@@ -85,7 +96,9 @@ export default function Checkout() {
           handlePayWithAave={handlePayWithAave}
           isLoadingAave={isLoadingAave}
           handleConfirmAavePayment={handleConfirmAavePayment}
-          showAavePaymentButton={borrowCapacity !== null && borrowCapacity.maxBorrowAmount > totalUSD}
+          showAavePaymentButton={
+            borrowCapacity !== null && borrowCapacity.maxBorrowAmount > totalUSD
+          }
         />
         <div>
           <OrderSummary
