@@ -118,6 +118,7 @@ export default function ProductDetailPage() {
       price: variantPrice || productResponse.product.price?.value || 0,
       quantity: 1,
       image_url: productResponse.product.images?.[0] || "",
+      product_link: selectedVariant?.link || productResponse.product.link,
       variant_asin: selectedVariant ? selectedVariant.asin : undefined,
       variant_dimensions: selectedVariant
         ? selectedVariant.dimensions.reduce(
