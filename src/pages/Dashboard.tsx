@@ -100,7 +100,6 @@ export default function Dashboard() {
   return (
     <div className="sm:ml-14 pt-20">
       {" "}
-      {/* Ajustado para tener en cuenta la navbar */}
       <div className="container mx-auto p-4">
         <Navbar />
         <SearchBar

@@ -14,8 +14,9 @@ import {
   RPC_URL,
   USDC_ADDRESS,
   CONTRACT_CHAIN_ID,
+  isDev,
 } from "../config/contractConfig";
-import { base } from "viem/chains";
+import { base, sepolia } from "viem/chains";
 
 const WEI_DECIMALS = 6;
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -35,10 +36,12 @@ interface WalletType {
 let publicClient: PublicClient;
 let walletClient: WalletClient;
 
+const chain = isDev ? sepolia : base;
+
 async function initializeClients(wallet?: WalletType) {
   if (!publicClient) {
     publicClient = createPublicClient({
-      chain: base,
+      chain: chain,
       transport: http(RPC_URL),
     }) as any;
   }
@@ -46,7 +49,7 @@ async function initializeClients(wallet?: WalletType) {
   if (wallet && !walletClient) {
     const provider = await wallet.getEthereumProvider();
     walletClient = createWalletClient({
-      chain: base,
+      chain: chain,
       transport: custom(provider),
     });
   }
@@ -66,86 +69,101 @@ async function checkAllowance(
   return allowance >= amount;
 }
 
-export async function approveUSDCSpending(wallet: WalletType, amount: bigint) {
+export async function approveUSDCSpending(
+  wallet: WalletType,
+  amount: bigint,
+): Promise<boolean> {
   const isCorrectNetwork = await checkNetwork(wallet);
   if (!isCorrectNetwork) {
-    throw new Error("Please switch to the Base network before proceeding.");
+    throw new Error(
+      `Please switch to the ${isDev ? "Sepolia" : "Base"} network before proceeding.`,
+    );
   }
 
   await initializeClients(wallet);
   const [address] = await walletClient.getAddresses();
 
   const isAllowanceEnough = await checkAllowance(address, amount);
+
   if (isAllowanceEnough) {
-    return null;
+    return true;
   }
 
   const hash = await walletClient.writeContract({
-    address: USDC_ADDRESS,
+    address: USDC_ADDRESS as `0x${string}`,
     abi: ERC20abi,
     functionName: "approve",
-    args: [CONTRACT_ADDRESS, amount],
-    account: address,
-    chain: base,
+    args: [CONTRACT_ADDRESS as `0x${string}`, amount],
+    account: address as `0x${string}`,
+    chain: chain,
   });
 
-  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  await publicClient.waitForTransactionReceipt({ hash });
 
-  return { hash, receipt };
+  const newAllowanceEnough = await checkAllowance(address, amount);
+
+  return newAllowanceEnough;
 }
 
 export async function createOrderOnChain(wallet: WalletType, amount: bigint) {
   const isCorrectNetwork = await checkNetwork(wallet);
   if (!isCorrectNetwork) {
-    throw new Error("Please switch to the Base network before proceeding.");
+    throw new Error(
+      `Please switch to the ${isDev ? "Sepolia" : "Base"} network before proceeding.`,
+    );
   }
 
-  try {
-    await initializeClients(wallet);
-    const [address] = await walletClient.getAddresses();
+  await initializeClients(wallet);
+  const [address] = await walletClient.getAddresses();
 
-    const approveTx = await approveUSDCSpending(wallet, amount);
-    if (approveTx) {
-      console.log("USDC spending approved. Hash:", approveTx.hash);
-    }
-
-    const { request } = await publicClient.simulateContract({
-      address: CONTRACT_ADDRESS,
-      abi: AmazonOrderSystemABI as any,
-      functionName: "createOrder",
-      args: [amount],
-      account: address,
-    });
-
-    const hash = await walletClient.writeContract(request);
-
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
-
-    await sleep(2000);
-
-    const events = await publicClient.getContractEvents({
-      address: CONTRACT_ADDRESS,
-      abi: AmazonOrderSystemABI,
-      fromBlock: receipt.blockNumber,
-      toBlock: receipt.blockNumber,
-      eventName: "OrderCreated",
-    });
-
-    const orderCreatedEvent = events.find(
-      (event) => event.transactionHash === hash,
-    ) as any;
-
-    if (!orderCreatedEvent) {
-      throw new Error("OrderCreated event not found for the transaction");
-    }
-
-    const orderId = orderCreatedEvent.args.orderId as any;
-
-    return { hash, orderId, receipt };
-  } catch (error) {
-    console.error("Error creating order on chain:", error);
-    throw error;
+  const isApproved = await approveUSDCSpending(wallet, amount);
+  if (!isApproved) {
+    throw new Error("Failed to approve USDC spending");
   }
+
+  const balance = (await publicClient.readContract({
+    address: USDC_ADDRESS as `0x${string}`,
+    abi: ERC20abi,
+    functionName: "balanceOf",
+    args: [address],
+  })) as bigint;
+
+  if (balance < amount) {
+    throw new Error("Insufficient USDC balance");
+  }
+
+  const { request } = await publicClient.simulateContract({
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: AmazonOrderSystemABI as any,
+    functionName: "createOrder",
+    args: [amount],
+    account: address as `0x${string}`,
+  });
+
+  const hash = await walletClient.writeContract(request);
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+  await sleep(2000);
+
+  const events = await publicClient.getContractEvents({
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: AmazonOrderSystemABI,
+    fromBlock: receipt.blockNumber,
+    toBlock: receipt.blockNumber,
+    eventName: "OrderCreated",
+  });
+
+  const orderCreatedEvent = events.find(
+    (event) => event.transactionHash === hash,
+  ) as any;
+
+  if (!orderCreatedEvent) {
+    throw new Error("OrderCreated event not found for the transaction");
+  }
+
+  const orderId = orderCreatedEvent.args.orderId as any;
+
+  return { hash, orderId, receipt };
 }
 
 export async function shipOrderOnChain(wallet: WalletType, orderId: bigint) {
@@ -169,7 +187,6 @@ export async function shipOrderOnChain(wallet: WalletType, orderId: bigint) {
 
 async function checkNetwork(wallet: WalletType): Promise<boolean> {
   if (!wallet.chainId) {
-    console.error("Wallet chainId is undefined");
     return false;
   }
 

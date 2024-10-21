@@ -97,25 +97,13 @@ export function useCheckout() {
 
       const borrowTx = await borrowFromAave(wallet, totalUSD, USDC_ADDRESS);
       await borrowTx.wait();
-      console.log("Aave borrowing transaction hash:", borrowTx.hash);
       toast({
         title: "Aave Borrowing Successful",
         description: `Successfully borrowed ${totalUSD} USDC from Aave. Transaction hash: ${borrowTx.hash}`,
       });
 
-      const orderItems: OrderItem[] = cart.items.map((item) => ({
-        asin: item.asin,
-        quantity: item.quantity,
-        price: item.price,
-        title: item.title,
-        image_url: item.image_url,
-        variant_asin: item.variant_asin,
-        variant_dimensions: item.variant_dimensions,
-      }));
-
-      const orderDetails: CreateOrderRequest = {
+      const orderDetails = {
         user_id: userData.privy_id,
-        items: orderItems,
         total_amount: totalMXN,
         total_amount_usd: totalUSD,
         full_name: fullName,
@@ -123,7 +111,6 @@ export function useCheckout() {
         postal_code: postalCode,
         phone: phone,
         delivery_instructions: deliveryInstructions,
-        blockchain_order_id: "",
       };
 
       await handleSubmit(e, orderDetails);
@@ -144,7 +131,7 @@ export function useCheckout() {
 
   const handleSubmit = async (
     e: React.FormEvent,
-    orderDetails: CreateOrderRequest,
+    orderDetails: Omit<CreateOrderRequest, "items" | "blockchain_order_id">,
   ) => {
     e.preventDefault();
     if (!userData || !cart || !wallets[0]) return;
@@ -158,16 +145,30 @@ export function useCheckout() {
         wallet,
         amountInUSDCUnits,
       );
-      console.log("Create order on chain transaction hash:", hash);
 
       toast({
         description: `Order created on blockchain. Order ID: ${orderId}, Transaction hash: ${hash}`,
         duration: 5000,
       });
 
-      orderDetails.blockchain_order_id = orderId.toString();
+      const orderItems: OrderItem[] = cart.items.map((item) => ({
+        asin: item.asin,
+        quantity: item.quantity,
+        price: item.price,
+        title: item.title,
+        image_url: item.image_url,
+        product_link: item.product_link,
+        variant_asin: item.variant_asin,
+        variant_dimensions: item.variant_dimensions,
+      }));
 
-      await createOrder(orderDetails);
+      const fullOrderDetails: CreateOrderRequest = {
+        ...orderDetails,
+        items: orderItems,
+        blockchain_order_id: orderId.toString(),
+      };
+
+      await createOrder(fullOrderDetails);
 
       toast({
         title: "Order Created",
