@@ -7,6 +7,7 @@ import {
   UI_POOL_DATA_PROVIDER_ADDRESS,
   POOL_ADDRESSES_PROVIDER,
   CONTRACT_CHAIN_ID,
+  isDev,
 } from "../config/contractConfig";
 import dayjs from "dayjs";
 
@@ -107,7 +108,6 @@ export async function getUserBorrowingCapacity(
     throw error;
   }
 }
-
 export async function borrowFromAave(
   wallet: WalletType,
   amount: number,
@@ -115,6 +115,7 @@ export async function borrowFromAave(
 ) {
   try {
     await initializeProvider();
+
     const providerInstance = new ethers.providers.Web3Provider(
       await wallet.getEthereumProvider(),
     );
@@ -122,8 +123,10 @@ export async function borrowFromAave(
     const userAddress = await signer.getAddress();
 
     const pool = new Pool(providerInstance, {
-      POOL: markets.AaveV3Base.POOL,
-      WETH_GATEWAY: markets.AaveV3Base.WETH_GATEWAY,
+      POOL: isDev ? markets.AaveV3Sepolia.POOL : markets.AaveV3Base.POOL,
+      WETH_GATEWAY: isDev
+        ? markets.AaveV3Sepolia.WETH_GATEWAY
+        : markets.AaveV3Base.WETH_GATEWAY,
     });
 
     const txs = await pool.borrow({
@@ -143,7 +146,12 @@ export async function borrowFromAave(
       value: txData.value ? ethers.BigNumber.from(txData.value) : undefined,
     });
 
-    return txResponse;
+    const txReceipt = await providerInstance.waitForTransaction(
+      txResponse.hash,
+      1,
+    );
+
+    return txReceipt;
   } catch (error) {
     console.error("Error borrowing from Aave:", error);
     throw error;

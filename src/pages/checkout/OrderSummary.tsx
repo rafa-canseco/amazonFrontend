@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface OrderSummaryProps {
@@ -44,7 +44,8 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
       ))}
       <div className="mt-4">
         <p>
-          Subtotal: ${subtotalMXN.toFixed(2)} MXN (${subtotalUSD.toFixed(2)} USD)
+          Subtotal: ${subtotalMXN.toFixed(2)} MXN (${subtotalUSD.toFixed(2)}{" "}
+          USD)
         </p>
         <p>
           Fee (3%): ${feeMXN.toFixed(2)} MXN (${feeUSD.toFixed(2)} USD)
