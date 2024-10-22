@@ -97,7 +97,7 @@ export function useCheckout() {
       const borrowTx = await borrowFromAave(wallet, totalUSD, USDC_ADDRESS);
       toast({
         title: "Aave Borrowing Successful",
-        description: `Successfully borrowed ${totalUSD} USDC from Aave. Transaction hash: ${borrowTx.hash}`,
+        description: `Successfully borrowed ${totalUSD} USDC from Aave. Transaction hash: ${borrowTx}`,
       });
 
       const orderDetails = {
