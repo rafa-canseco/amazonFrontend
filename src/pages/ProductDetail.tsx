@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useProductDetails, useAddToCart, useVariantPrice } from "../hooks";
 import { useUser } from "../contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthenticatedAction } from "@/hooks/useAuthenticatedAction";
 import {
   ProductVariant,
   ProductVariantDimension,
@@ -37,6 +38,7 @@ export default function ProductDetailPage() {
     isLoading,
     error,
   } = useProductDetails(asin || "");
+  const performAuthenticatedAction = useAuthenticatedAction();
   const addToCartMutation = useAddToCart();
   const [activeImage, setActiveImage] = useState(0);
   const { toast } = useToast();
@@ -107,48 +109,50 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!productResponse?.product || !userData) {
-      console.log("Product or user data is missing");
-      return;
-    }
+    performAuthenticatedAction(() => {
+      if (!productResponse?.product || !userData) {
+        console.log("Product or user data is missing");
+        return;
+      }
 
-    const cartItem: CartItem = {
-      asin: productResponse.product.asin,
-      title: productResponse.product.title,
-      price: variantPrice || productResponse.product.price?.value || 0,
-      quantity: 1,
-      image_url: productResponse.product.images?.[0] || "",
-      product_link: selectedVariant?.link || productResponse.product.link,
-      variant_asin: selectedVariant ? selectedVariant.asin : undefined,
-      variant_dimensions: selectedVariant
-        ? selectedVariant.dimensions.reduce(
-            (acc, dim) => {
-              acc[dim.name] = dim.value;
-              return acc;
-            },
-            {} as { [key: string]: string },
-          )
-        : undefined,
-    };
+      const cartItem: CartItem = {
+        asin: productResponse.product.asin,
+        title: productResponse.product.title,
+        price: variantPrice || productResponse.product.price?.value || 0,
+        quantity: 1,
+        image_url: productResponse.product.images?.[0] || "",
+        product_link: selectedVariant?.link || productResponse.product.link,
+        variant_asin: selectedVariant ? selectedVariant.asin : undefined,
+        variant_dimensions: selectedVariant
+          ? selectedVariant.dimensions.reduce(
+              (acc, dim) => {
+                acc[dim.name] = dim.value;
+                return acc;
+              },
+              {} as { [key: string]: string },
+            )
+          : undefined,
+      };
 
-    addToCartMutation.mutate(
-      { userId: userData.privy_id, item: cartItem },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Added to Cart",
-            description: `${cartItem.title} has been added to your cart.`,
-          });
+      addToCartMutation.mutate(
+        { userId: userData.privy_id, item: cartItem },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Added to Cart",
+              description: `${cartItem.title} has been added to your cart.`,
+            });
+          },
+          onError: () => {
+            toast({
+              title: "Error",
+              description: "Failed to add item to cart. Please try again.",
+              variant: "destructive",
+            });
+          },
         },
-        onError: () => {
-          toast({
-            title: "Error",
-            description: "Failed to add item to cart. Please try again.",
-            variant: "destructive",
-          });
-        },
-      },
-    );
+      );
+    });
   };
 
   if (isLoading) return <div>Loading...</div>;

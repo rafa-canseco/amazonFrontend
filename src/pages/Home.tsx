@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { usePrivy } from "@privy-io/react-auth";
 import { useUser } from "../contexts/UserContext";
 import { useExchangeRate } from "../hooks/useExchangeRate";
@@ -12,24 +10,13 @@ import { CallToAction } from "./sections/CallToAction";
 import { Footer } from "./sections/Footer";
 
 function Home() {
-  const { authenticated, ready } = usePrivy();
-  const { isRegistered, isLoading } = useUser();
-  const navigate = useNavigate();
+  const { ready } = usePrivy();
+  const { isLoading } = useUser();
 
   useExchangeRate();
 
-  useEffect(() => {
-    if (ready && authenticated && isRegistered && !isLoading) {
-      navigate("/dashboard");
-    }
-  }, [ready, authenticated, isRegistered, isLoading, navigate]);
-
   if (!ready || isLoading) {
     return <div>Loading...</div>;
-  }
-
-  if (authenticated && isRegistered) {
-    return null;
   }
 
   return (

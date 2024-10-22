@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { usePrivy } from "@privy-io/react-auth";
 import { useNavigate } from "react-router-dom";
 
 interface LogButtonProps {
@@ -7,22 +6,15 @@ interface LogButtonProps {
 }
 
 function LogButton({ className }: LogButtonProps) {
-  const { authenticated, login, logout } = usePrivy();
-
   const navigate = useNavigate();
 
   const handleClick = async () => {
-    if (authenticated) {
-      await logout();
-      navigate("/");
-    } else {
-      await login();
-    }
+    navigate("/dashboard");
   };
 
   return (
     <Button className={className} onClick={handleClick}>
-      {authenticated ? "Log out" : "Launch dApp"}
+      {"Launch dApp"}
     </Button>
   );
 }

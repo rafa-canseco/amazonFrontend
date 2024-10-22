@@ -28,7 +28,7 @@ function Navbar() {
     <aside className="fixed inset-y-0 left-0 z-20 w-14 flex-col border-r bg-background hidden sm:flex">
       <nav className="flex flex-col items-center justify-between h-full py-4">
         <div className="flex flex-col items-center gap-4">
-          <NavItem icon={Home} tooltip="Dashboard" to="/" />
+          <NavItem icon={Home} tooltip="Dashboard" to="/dashboard" />
           <CartSheet />
           <NavItem icon={ShoppingBag} tooltip="My Orders" to="/my-orders" />
           {authenticated && (
