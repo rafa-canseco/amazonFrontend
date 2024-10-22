@@ -76,7 +76,7 @@ export default function MyOrders() {
       {filteredOrders.length === 0 ? (
         <p>No orders found for the selected status.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           {filteredOrders.map((order) => (
             <Card key={order.id}>
               <CardHeader>
@@ -85,20 +85,20 @@ export default function MyOrders() {
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <div>
+                  <div className="text-left">
                     Date: {new Date(order.created_at).toLocaleDateString()}
                   </div>
-                  <div>
+                  <div className="text-left">
                     Total: ${order.total_amount.toFixed(2)} MXN ($
                     {order.total_amount_usd.toFixed(2)} USD)
                   </div>
-                  <div>
+                  <div className="text-left">
                     Shipping Guide:{" "}
                     {order.shipping_guide || "Generating shipping order..."}
                   </div>
                 </div>
                 <Tabs defaultValue="items" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-2 t">
                     <TabsTrigger value="items">Items</TabsTrigger>
                     <TabsTrigger value="shipping">Shipping Details</TabsTrigger>
                   </TabsList>
@@ -107,31 +107,30 @@ export default function MyOrders() {
                       <h3 className="font-semibold">Items:</h3>
                       <ul>
                         {order.items.map((item, index) => (
-                          <li
-                            key={index}
-                            className="flex items-center space-x-4 my-2"
-                          >
-                            <img
-                              src={item.image_url}
-                              alt={item.title}
-                              className="w-16 h-16 object-cover rounded"
-                            />
-                            <div>
+                          <li key={index} className="flex my-2">
+                            <div className="flex-1 text-left">
                               <div>{item.title}</div>
                               <div>
                                 Quantity: {item.quantity}, Price: $
                                 {item.price.toFixed(2)} MXN
                               </div>
-                              <Button variant="link" asChild>
-                                <a
-                                  href={item.product_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  View on Amazon
-                                </a>
-                              </Button>
+                              <div className="mt-2">
+                                <Button variant="link" asChild>
+                                  <a
+                                    href={item.product_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    View on Amazon
+                                  </a>
+                                </Button>
+                              </div>
                             </div>
+                            <img
+                              src={item.image_url}
+                              alt={item.title}
+                              className="w-16 h-16 object-cover rounded ml-4"
+                            />
                           </li>
                         ))}
                       </ul>
@@ -140,13 +139,26 @@ export default function MyOrders() {
                   <TabsContent value="shipping">
                     <div className="mt-2">
                       <h3 className="font-semibold">Shipping Details:</h3>
-                      <div>{order.full_name}</div>
-                      <div>{order.street}</div>
-                      <div>{order.postal_code}</div>
-                      <div>Phone: {order.phone}</div>
-                      {order.delivery_instructions && (
-                        <div>Instructions: {order.delivery_instructions}</div>
-                      )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-left">
+                          <strong>Name:</strong> {order.full_name}
+                        </div>
+                        <div className="text-left">
+                          <strong>Street:</strong> {order.street}
+                        </div>
+                        <div className="text-left">
+                          <strong>Postal Code:</strong> {order.postal_code}
+                        </div>
+                        <div className="text-left">
+                          <strong>Phone:</strong> {order.phone}
+                        </div>
+                        {order.delivery_instructions && (
+                          <div className="text-left col-span-2">
+                            <strong>Instructions:</strong>{" "}
+                            {order.delivery_instructions}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </TabsContent>
                 </Tabs>
