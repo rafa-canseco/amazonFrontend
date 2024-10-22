@@ -1,4 +1,4 @@
-export const isDev = false;
+export const isDev = true;
 
 const getEnvValue = (devValue: string, prodValue: string) =>
   isDev ? devValue : prodValue;
