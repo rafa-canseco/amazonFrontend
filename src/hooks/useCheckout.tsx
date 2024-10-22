@@ -139,16 +139,6 @@ export function useCheckout() {
       const wallet = wallets[0];
       const amountInUSDCUnits = convertToWei(orderDetails.total_amount_usd);
 
-      const { hash, orderId } = await createOrderOnChain(
-        wallet,
-        amountInUSDCUnits,
-      );
-
-      toast({
-        description: `Order created on blockchain. Order ID: ${orderId}, Transaction hash: ${hash}`,
-        duration: 5000,
-      });
-
       const orderItems: OrderItem[] = cart.items.map((item) => ({
         asin: item.asin,
         quantity: item.quantity,
@@ -159,6 +149,16 @@ export function useCheckout() {
         variant_asin: item.variant_asin,
         variant_dimensions: item.variant_dimensions,
       }));
+
+      const { hash, orderId } = await createOrderOnChain(
+        wallet,
+        amountInUSDCUnits,
+      );
+
+      toast({
+        description: `Order created on blockchain. Order ID: ${orderId}, Transaction hash: ${hash}`,
+        duration: 5000,
+      });
 
       const fullOrderDetails: CreateOrderRequest = {
         ...orderDetails,
