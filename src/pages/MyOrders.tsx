@@ -17,9 +17,11 @@ import {
 } from "../componentsUX/OrderStatusFilter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function MyOrders() {
-  const { userData } = useUser();
+  const { userData, isAuthenticated } = useUser();
+  const { login } = usePrivy();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +39,8 @@ export default function MyOrders() {
         } finally {
           setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
 
@@ -61,6 +65,21 @@ export default function MyOrders() {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated()) {
+    return (
+      <div className="container mx-auto p-4">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)]">
+          <h1 className="text-2xl font-bold mb-4">My Orders</h1>
+          <p className="text-lg mb-4">
+            Please connect your wallet to view your orders.
+          </p>
+          <Button onClick={() => login()}>Connect Wallet</Button>
+        </div>
       </div>
     );
   }
