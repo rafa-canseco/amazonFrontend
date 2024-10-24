@@ -49,8 +49,11 @@ export default function Dashboard() {
     currentPage * ITEMS_PER_PAGE,
   );
 
+  const searchParams = new URLSearchParams(location.search);
+  const isSearchActive = searchParams.has("query");
+
   return (
-    <div className="min-h-screen bg-background"> 
+    <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8">
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
@@ -66,10 +69,19 @@ export default function Dashboard() {
             onPageChange={setCurrentPage}
             onProductClick={handleProductClick}
           />
-        ) : (
+        ) : isSearchActive ? (
           <div className="text-center">
             <p className="text-lg mb-4">No se encontraron resultados.</p>
             <p className="text-md">Intenta buscar otro producto.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col justify-center items-center h-screen ml-80">
+            <h1 className="text-4xl font-bold text-center mb-4">
+              Search for your next buy on Amazon!
+            </h1>
+            <p className="text-2xl text-center">
+              And pay with USDC or your Aave credit
+            </p>
           </div>
         )}
       </main>
