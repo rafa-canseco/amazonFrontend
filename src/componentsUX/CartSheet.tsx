@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShoppingCart, Loader2 } from "lucide-react";
+import {  Loader2 } from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 import { useCart, useRemoveFromCart } from "../hooks";
 import { useExchangeRate } from "../hooks/useExchangeRate";
@@ -18,7 +18,11 @@ import {
 import { CartItem } from "../types/types";
 import { Separator } from "@/components/ui/separator";
 
-function CartSheet() {
+interface CartSheetProps {
+  children?: React.ReactNode;
+}
+
+function CartSheet({ children }: CartSheetProps) {
   const navigate = useNavigate();
   const { userData } = useUser();
   const { data: cart, isLoading } = useCart(userData?.privy_id || "");
@@ -76,14 +80,14 @@ function CartSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="relative">
-          <ShoppingCart className="w-6 h-6 stroke-1" />
+        <div className="">
+          {children}
           {cart && cart.items.length > 0 && (
-            <Badge className="absolute -top-2 -right-2" variant="destructive">
+            <Badge className="absolute -top-2 left-40" variant="destructive">
               {cart.items.length}
             </Badge>
           )}
-        </button>
+        </div>
       </SheetTrigger>
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>

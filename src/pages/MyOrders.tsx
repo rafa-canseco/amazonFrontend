@@ -69,7 +69,6 @@ export default function MyOrders() {
 
   return (
     <div className="container mx-auto p-4 flex flex-col h-screen mt-10">
-      <Navbar />
       <div className="flex-none">
         <h1 className="text-2xl font-bold mb-4 ">My Orders</h1>
         <OrdersHeader

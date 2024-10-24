@@ -1,7 +1,6 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
 import { Navigate } from "react-router-dom";
-import Navbar from "./Navbar";
 import { useCheckout } from "../hooks/useCheckout";
 import { useUser } from "../contexts/UserContext";
 import { CreateOrderRequest } from "../types/types";
@@ -77,7 +76,6 @@ export default function Checkout() {
 
   return (
     <div className="container mx-auto p-4">
-      <Navbar />
       <h1 className="text-2xl font-bold mb-4">Checkout</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <CheckoutForm

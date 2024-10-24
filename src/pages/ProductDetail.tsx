@@ -27,8 +27,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import Navbar from "./Navbar";
-import { SearchBar } from "../componentsUX/SearchBar";
 
 export default function ProductDetailPage() {
   const { asin } = useParams<{ asin: string }>();
@@ -162,12 +160,11 @@ export default function ProductDetailPage() {
   const product = productResponse.product;
 
   return (
-    <div className="sm:ml-14 pt-20">
-      <div className="container mx-auto p-4">
-        <Navbar />
-        <SearchBar />
-        <h1 className="text-2xl font-bold mb-4">{product.title}</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div>
+    <div className="sm:ml-14">
+      <div>
+        <h1 className="text-2xl font-bold mb-4 ">{product.title}</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ">
           <div>
             {product.images && product.images.length > 0 && (
               <div className="mb-4">
@@ -213,8 +210,8 @@ export default function ProductDetailPage() {
               {isPriceLoading
                 ? "Loading price..."
                 : variantPrice
-                  ? `$${variantPrice.toFixed(2)}`
-                  : productResponse?.product?.price?.raw}
+                ? `$${variantPrice.toFixed(2)}`
+                : productResponse?.product?.price?.raw}
             </p>
             {product.rating && (
               <p className="mb-2">
@@ -291,6 +288,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import logo from "../../assets/logo.png";
+import logo from "../../assets/croplogo.png";
 import { Twitter } from "lucide-react";
 
 export const Footer = () => {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { Bug } from "lucide-react";
 import {
   Sheet,
@@ -21,7 +21,11 @@ import { useToast } from "@/hooks/use-toast";
 import styles from "./FeedbackSheet.module.css";
 import { sendFeedbackInside } from "../utils/api";
 
-export function FeedbackSheet() {
+interface FeedbackSheetProps {
+  children?: ReactNode;
+}
+
+export function FeedbackSheet({ children }: FeedbackSheetProps) {
   const [feedbackType, setFeedbackType] = useState("");
   const [feedbackText, setFeedbackText] = useState("");
   const { toast } = useToast();
@@ -50,9 +54,13 @@ export function FeedbackSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <div className={styles.feedbackButtonPulse}>
-          <Bug className="h-[1.2rem] w-[1.2rem]" />
-        </div>
+        {children ? (
+          children
+        ) : (
+          <div className={styles.feedbackButtonPulse}>
+            <Bug className="h-[1.2rem] w-[1.2rem]" />
+          </div>
+        )}
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
