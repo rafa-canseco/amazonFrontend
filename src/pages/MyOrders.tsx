@@ -16,6 +16,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { usePrivy } from "@privy-io/react-auth";
 import { OrdersHeader } from "@/componentsUX/OrdersHeader";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function MyOrders() {
   const { userData, isAuthenticated } = useUser();
@@ -26,14 +34,29 @@ export default function MyOrders() {
   const [currentStatus, setCurrentStatus] = useState<OrderStatus>("all");
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [notificationEmail, setNotificationEmail] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 6;
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = filteredOrders.slice(
+    indexOfFirstOrder,
+    indexOfLastOrder,
+  );
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   useEffect(() => {
     const fetchOrders = async () => {
       if (userData?.privy_id) {
         try {
           const fetchedOrders = await getOrders(userData.privy_id);
-          setOrders(fetchedOrders);
-          setFilteredOrders(fetchedOrders);
+          const sortedOrders = fetchedOrders.sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime(),
+          );
+          setOrders(sortedOrders);
+          setFilteredOrders(sortedOrders);
         } catch (error) {
           console.error("Error fetching orders:", error);
         } finally {
@@ -90,10 +113,6 @@ export default function MyOrders() {
   ) => {
     setNotifyEnabled(notifyEnabled);
     setNotificationEmail(email);
-    // TODO: Implementar la llamada a la API para guardar las preferencias
-    console.log(
-      `Global notification settings: Notify ${notifyEnabled ? "enabled" : "disabled"}, Email: ${email}`,
-    );
   };
 
   return (
@@ -111,96 +130,134 @@ export default function MyOrders() {
       {filteredOrders.length === 0 ? (
         <p>No orders found for the selected status.</p>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
-          {filteredOrders.map((order) => (
-            <Card key={order.id}>
-              <CardHeader>
-                <CardTitle>Order #{order.id}</CardTitle>
-                <CardDescription>Status: {order.status}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <div className="text-left">
-                    Date: {new Date(order.created_at).toLocaleDateString()}
-                  </div>
-                  <div className="text-left">
-                    Total: ${order.total_amount.toFixed(2)} MXN ($
-                    {order.total_amount_usd.toFixed(2)} USD)
-                  </div>
-                  <div className="text-left">
-                    Shipping Guide:{" "}
-                    {order.shipping_guide || "Generating shipping order..."}
-                  </div>
-                </div>
-                <Tabs defaultValue="items" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 t">
-                    <TabsTrigger value="items">Items</TabsTrigger>
-                    <TabsTrigger value="shipping">Shipping Details</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="items">
-                    <div className="mt-2">
-                      <h3 className="font-semibold">Items:</h3>
-                      <ul>
-                        {order.items.map((item, index) => (
-                          <li key={index} className="flex my-2">
-                            <div className="flex-1 text-left">
-                              <div>{item.title}</div>
-                              <div>
-                                Quantity: {item.quantity}, Price: $
-                                {item.price.toFixed(2)} MXN
-                              </div>
-                              <div className="mt-2">
-                                <Button variant="link" asChild>
-                                  <a
-                                    href={item.product_link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    View on Amazon
-                                  </a>
-                                </Button>
-                              </div>
-                            </div>
-                            <img
-                              src={item.image_url}
-                              alt={item.title}
-                              className="w-16 h-16 object-cover rounded ml-4"
-                            />
-                          </li>
-                        ))}
-                      </ul>
+        <>
+          <div className="grid grid-cols-2 gap-4">
+            {currentOrders.map((order) => (
+              <Card key={order.id}>
+                <CardHeader>
+                  <CardTitle>Order #{order.id}</CardTitle>
+                  <CardDescription>Status: {order.status}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4">
+                    <div className="text-left">
+                      Date: {new Date(order.created_at).toLocaleDateString()}
                     </div>
-                  </TabsContent>
-                  <TabsContent value="shipping">
-                    <div className="mt-2">
-                      <h3 className="font-semibold">Shipping Details:</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-left">
-                          <strong>Name:</strong> {order.full_name}
-                        </div>
-                        <div className="text-left">
-                          <strong>Street:</strong> {order.street}
-                        </div>
-                        <div className="text-left">
-                          <strong>Postal Code:</strong> {order.postal_code}
-                        </div>
-                        <div className="text-left">
-                          <strong>Phone:</strong> {order.phone}
-                        </div>
-                        {order.delivery_instructions && (
-                          <div className="text-left col-span-2">
-                            <strong>Instructions:</strong>{" "}
-                            {order.delivery_instructions}
-                          </div>
-                        )}
+                    <div className="text-left">
+                      Total: ${order.total_amount.toFixed(2)} MXN ($
+                      {order.total_amount_usd.toFixed(2)} USD)
+                    </div>
+                    <div className="text-left">
+                      Shipping Guide:{" "}
+                      {order.shipping_guide || "Generating shipping order..."}
+                    </div>
+                  </div>
+                  <Tabs defaultValue="items" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 t">
+                      <TabsTrigger value="items">Items</TabsTrigger>
+                      <TabsTrigger value="shipping">
+                        Shipping Details
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="items">
+                      <div className="mt-2">
+                        <h3 className="font-semibold">Items:</h3>
+                        <ul>
+                          {order.items.map((item, index) => (
+                            <li key={index} className="flex my-2">
+                              <div className="flex-1 text-left">
+                                <div>{item.title}</div>
+                                <div>
+                                  Quantity: {item.quantity}, Price: $
+                                  {item.price.toFixed(2)} MXN
+                                </div>
+                                <div className="mt-2">
+                                  <Button variant="link" asChild>
+                                    <a
+                                      href={item.product_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      View on Amazon
+                                    </a>
+                                  </Button>
+                                </div>
+                              </div>
+                              <img
+                                src={item.image_url}
+                                alt={item.title}
+                                className="w-16 h-16 object-cover rounded ml-4"
+                              />
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    </TabsContent>
+                    <TabsContent value="shipping">
+                      <div className="mt-2">
+                        <h3 className="font-semibold">Shipping Details:</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-left">
+                            <strong>Name:</strong> {order.full_name}
+                          </div>
+                          <div className="text-left">
+                            <strong>Street:</strong> {order.street}
+                          </div>
+                          <div className="text-left">
+                            <strong>Postal Code:</strong> {order.postal_code}
+                          </div>
+                          <div className="text-left">
+                            <strong>Phone:</strong> {order.phone}
+                          </div>
+                          {order.delivery_instructions && (
+                            <div className="text-left col-span-2">
+                              <strong>Instructions:</strong>{" "}
+                              {order.delivery_instructions}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => paginate(Math.max(1, currentPage - 1))}
+                  className={
+                    currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                  }
+                />
+              </PaginationItem>
+              {[...Array(totalPages)].map((_, index) => (
+                <PaginationItem key={index}>
+                  <PaginationLink
+                    onClick={() => paginate(index + 1)}
+                    isActive={currentPage === index + 1}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    paginate(Math.min(totalPages, currentPage + 1))
+                  }
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </>
       )}
     </div>
   );
