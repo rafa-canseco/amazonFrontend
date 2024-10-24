@@ -7,7 +7,7 @@ import Navbar from "./Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { shipOrderOnChain } from "../utils/contractInteraction";
+// import { shipOrderOnChain } from "../utils/contractInteraction";
 import {
   Table,
   TableBody,
@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useWallets } from "@privy-io/react-auth";
+// import { useWallets } from "@privy-io/react-auth";
 
 export default function OrderDetails() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -27,7 +27,7 @@ export default function OrderDetails() {
   const [shippingGuide, setShippingGuide] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { wallets } = useWallets();
+  // const { wallets } = useWallets();
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -64,16 +64,14 @@ export default function OrderDetails() {
     }
 
     try {
-      const wallet = wallets[0];
-      await shipOrderOnChain(wallet, BigInt(order.blockchain_order_id));
+      // const wallet = wallets[0];
+      // await shipOrderOnChain(wallet, BigInt(order.blockchain_order_id));
 
-      // Update status in backend
       const accessToken = await getAccessToken();
       if (!accessToken) throw new Error("No access token available");
 
       await updateOrderStatus(accessToken, order.id, "shipped", shippingGuide);
 
-      // Update local state
       setOrder({ ...order, status: "shipped" });
 
       toast({
