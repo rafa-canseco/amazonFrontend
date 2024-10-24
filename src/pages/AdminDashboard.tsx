@@ -4,7 +4,6 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { usePrivy } from "@privy-io/react-auth";
 import { getAllOrders } from "../utils/api";
 import { Order } from "../types/types";
-import Navbar from "./Navbar";
 import {
   Table,
   TableBody,
@@ -52,7 +51,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto p-4">
-      <Navbar />
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
       <Table>
         <TableHeader>

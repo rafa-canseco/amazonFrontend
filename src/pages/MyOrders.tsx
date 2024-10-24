@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useUser } from "../contexts/UserContext";
 import { usePrivy } from "@privy-io/react-auth";
 import { Loader2 } from "lucide-react";
-import Navbar from "./Navbar";
 import { OrdersHeader } from "@/componentsUX/OrdersHeader";
 import { OrderList } from "@/componentsUX/OrderList";
 import { Button } from "@/components/ui/button";
@@ -55,7 +54,6 @@ export default function MyOrders() {
   if (!isAuthenticated()) {
     return (
       <div className="container mx-auto p-4">
-        <Navbar />
         <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)]">
           <h1 className="text-2xl font-bold mb-4">My Orders</h1>
           <p className="text-lg mb-4">
@@ -69,7 +67,6 @@ export default function MyOrders() {
 
   return (
     <div className="container mx-auto p-4 flex flex-col h-screen mt-10">
-      <Navbar />
       <div className="flex-none">
         <h1 className="text-2xl font-bold mb-4 ">My Orders</h1>
         <OrdersHeader
