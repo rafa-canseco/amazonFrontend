@@ -75,40 +75,46 @@ export default function Checkout() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Checkout</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <CheckoutForm
-          fullName={fullName}
-          setFullName={setFullName}
-          street={street}
-          setStreet={setStreet}
-          postalCode={postalCode}
-          setPostalCode={setPostalCode}
-          phone={phone}
-          setPhone={setPhone}
-          deliveryInstructions={deliveryInstructions}
-          setDeliveryInstructions={setDeliveryInstructions}
-          isSubmitting={isSubmitting}
-          onSubmit={onSubmit}
-          handlePayWithAave={handlePayWithAave}
-          isLoadingAave={isLoadingAave}
-          handleConfirmAavePayment={handleConfirmAavePayment}
-          showAavePaymentButton={
-            borrowCapacity !== null && borrowCapacity.maxBorrowAmount > totalUSD
-          }
-        />
-        <div>
-          <OrderSummary
-            cart={cart}
-            subtotalMXN={subtotalMXN}
-            feeMXN={feeMXN}
-            totalMXN={totalMXN}
-            subtotalUSD={subtotalUSD}
-            feeUSD={feeUSD}
-            totalUSD={totalUSD}
-          />
-          <AaveBorrowingInfo borrowCapacity={borrowCapacity} />
+    <div className="min-h-screen flex flex-col">
+      <h1 className="text-4xl sm:text-5xl font-bold text-center my-8 sm:my-12">Checkout</h1>
+      <div className="flex-grow flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="order-2 lg:order-1">
+              <CheckoutForm
+                fullName={fullName}
+                setFullName={setFullName}
+                street={street}
+                setStreet={setStreet}
+                postalCode={postalCode}
+                setPostalCode={setPostalCode}
+                phone={phone}
+                setPhone={setPhone}
+                deliveryInstructions={deliveryInstructions}
+                setDeliveryInstructions={setDeliveryInstructions}
+                isSubmitting={isSubmitting}
+                onSubmit={onSubmit}
+                handlePayWithAave={handlePayWithAave}
+                isLoadingAave={isLoadingAave}
+                handleConfirmAavePayment={handleConfirmAavePayment}
+                showAavePaymentButton={
+                  borrowCapacity !== null && borrowCapacity.maxBorrowAmount > totalUSD
+                }
+              />
+            </div>
+            <div className="order-1 lg:order-2">
+              <OrderSummary
+                cart={cart}
+                subtotalMXN={subtotalMXN}
+                feeMXN={feeMXN}
+                totalMXN={totalMXN}
+                subtotalUSD={subtotalUSD}
+                feeUSD={feeUSD}
+                totalUSD={totalUSD}
+              />
+              <AaveBorrowingInfo borrowCapacity={borrowCapacity} />
+            </div>
+          </div>
         </div>
       </div>
     </div>

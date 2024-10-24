@@ -42,7 +42,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
   showAavePaymentButton,
 }) => {
   return (
-    <form onSubmit={onSubmit} className="space-y-4 mx-40">
+    <form onSubmit={onSubmit} className="space-y-4 mx-4 sm:mx-8 md:mx-16 lg:mx-40">
       <Input
         placeholder="Full Name"
         value={fullName}
@@ -94,7 +94,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
             Loading Aave Data...
           </>
         ) : (
-          "Can I pay with my credit on Aave? 🤔"
+          "Can I pay with my credit on Aave?"
         )}
       </Button>
       {showAavePaymentButton && (
