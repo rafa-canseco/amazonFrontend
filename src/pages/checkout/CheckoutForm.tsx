@@ -42,7 +42,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
   showAavePaymentButton,
 }) => {
   return (
-    <form onSubmit={onSubmit} className="space-y-4 mx-4 sm:mx-8 md:mx-16 lg:mx-40">
+    <form onSubmit={onSubmit} className="space-y-6 w-full max-w-md">
       <Input
         placeholder="Full Name"
         value={fullName}
@@ -72,48 +72,54 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         value={deliveryInstructions}
         onChange={(e) => setDeliveryInstructions(e.target.value)}
       />
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing...
-          </>
-        ) : (
-          "Complete Order"
-        )}
-      </Button>
-      <Button
-        type="button"
-        className="w-full mt-2"
-        onClick={handlePayWithAave}
-        disabled={isLoadingAave}
-      >
-        {isLoadingAave ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Loading Aave Data...
-          </>
-        ) : (
-          "Can I pay with my credit on Aave?"
-        )}
-      </Button>
-      {showAavePaymentButton && (
+      <div className="space-y-4">
         <Button
-          type="button"
-          className="w-full mt-2"
-          onClick={handleConfirmAavePayment}
+          type="submit"
+          className="w-full h-12 text-sm lg:h-14 lg:text-lg"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing Aave Payment...
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Processing...
             </>
           ) : (
-            "Ok! Pay with my credit on Aave"
+            "Complete Order"
           )}
         </Button>
-      )}
+        <Button
+          type="button"
+          className="w-full h-12 text-sm lg:h-14 lg:text-lg"
+          onClick={handlePayWithAave}
+          disabled={isLoadingAave}
+        >
+          {isLoadingAave ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Loading Aave Data...
+            </>
+          ) : (
+            "Can I pay with my credit on Aave?"
+          )}
+        </Button>
+        {showAavePaymentButton && (
+          <Button
+            type="button"
+            className="w-full h-12 text-sm lg:h-14 lg:text-lg"
+            onClick={handleConfirmAavePayment}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Processing Aave Payment...
+              </>
+            ) : (
+              "Ok! Pay with my credit on Aave"
+            )}
+          </Button>
+        )}
+      </div>
     </form>
   );
 };

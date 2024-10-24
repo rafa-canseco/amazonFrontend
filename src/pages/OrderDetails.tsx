@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { usePrivy } from "@privy-io/react-auth";
 import { getOrderDetails, updateOrderStatus } from "../utils/api";
 import { Order, OrderItem } from "../types/types";
-import Navbar from "./Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -93,7 +92,6 @@ export default function OrderDetails() {
 
   return (
     <div className="container mx-auto p-4">
-      <Navbar />
       <h1 className="text-2xl font-bold mb-4">Order Details</h1>
       <Table>
         <TableCaption>Order Information</TableCaption>

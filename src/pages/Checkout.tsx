@@ -75,12 +75,14 @@ export default function Checkout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <h1 className="text-4xl sm:text-5xl font-bold text-center my-8 sm:my-12">Checkout</h1>
-      <div className="flex-grow flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="order-2 lg:order-1">
+    <div className="flex flex-col gap-y-20 ml-20 mr-20">
+      <h1 className="text-4xl sm:text-5xl font-bold text-center my-8 sm:my-12 ">
+        Checkout
+      </h1>
+      <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+            <div className="order-2 lg:order-1 flex justify-center">
               <CheckoutForm
                 fullName={fullName}
                 setFullName={setFullName}
@@ -98,7 +100,8 @@ export default function Checkout() {
                 isLoadingAave={isLoadingAave}
                 handleConfirmAavePayment={handleConfirmAavePayment}
                 showAavePaymentButton={
-                  borrowCapacity !== null && borrowCapacity.maxBorrowAmount > totalUSD
+                  borrowCapacity !== null &&
+                  borrowCapacity.maxBorrowAmount > totalUSD
                 }
               />
             </div>
