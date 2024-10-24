@@ -11,13 +11,11 @@ import {
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import Navbar from "./Navbar";
-import {
-  OrderStatusFilter,
-  OrderStatus,
-} from "../componentsUX/OrderStatusFilter";
+import { OrderStatus } from "../componentsUX/OrderStatusFilter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { usePrivy } from "@privy-io/react-auth";
+import { OrdersHeader } from "@/componentsUX/OrdersHeader";
 
 export default function MyOrders() {
   const { userData, isAuthenticated } = useUser();
@@ -26,6 +24,8 @@ export default function MyOrders() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentStatus, setCurrentStatus] = useState<OrderStatus>("all");
+  const [notifyEnabled, setNotifyEnabled] = useState(false);
+  const [notificationEmail, setNotificationEmail] = useState("");
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -84,13 +84,29 @@ export default function MyOrders() {
     );
   }
 
+  const handleNotificationChange = async (
+    notifyEnabled: boolean,
+    email: string,
+  ) => {
+    setNotifyEnabled(notifyEnabled);
+    setNotificationEmail(email);
+    // TODO: Implementar la llamada a la API para guardar las preferencias
+    console.log(
+      `Global notification settings: Notify ${notifyEnabled ? "enabled" : "disabled"}, Email: ${email}`,
+    );
+  };
+
   return (
     <div className="container mx-auto p-4">
       <Navbar />
       <h1 className="text-2xl font-bold mb-4">My Orders</h1>
-      <OrderStatusFilter
+
+      <OrdersHeader
         currentStatus={currentStatus}
         onStatusChange={handleStatusChange}
+        notifyEnabled={notifyEnabled}
+        notificationEmail={notificationEmail}
+        onNotificationChange={handleNotificationChange}
       />
       {filteredOrders.length === 0 ? (
         <p>No orders found for the selected status.</p>

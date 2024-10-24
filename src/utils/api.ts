@@ -244,3 +244,29 @@ export const getVariantPrice = async (asin: string): Promise<number> => {
   );
   return response.data.product.price?.value || 0;
 };
+
+export const getUserEmail = async (privyId: string): Promise<string | null> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/user/email`, {
+      params: { privy_id: privyId },
+    });
+    return response.data.email;
+  } catch (error) {
+    console.error("Error fetching user email:", error);
+    throw error;
+  }
+};
+
+export const updateUserEmail = async (
+  privyId: string,
+  email: string,
+): Promise<void> => {
+  try {
+    await axios.put(`${API_BASE_URL}/user/email`, null, {
+      params: { privy_id: privyId, email: email },
+    });
+  } catch (error) {
+    console.error("Error updating user email:", error);
+    throw error;
+  }
+};

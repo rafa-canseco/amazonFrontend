@@ -188,3 +188,24 @@ export interface BorrowCapacity {
   healthFactor: number;
   netWorthUSD: number;
 }
+
+export interface ShippingNotificationProps {
+  onNotificationChange: (notifyEnabled: boolean, email: string) => void;
+  initialNotifyEnabled: boolean;
+  initialEmail: string;
+}
+
+export type OrderStatus = "all" | "order received" | "shipped" | "delivered";
+
+export interface OrderStatusFilterProps {
+  currentStatus: OrderStatus;
+  onStatusChange: (status: OrderStatus) => void;
+}
+
+export interface OrdersHeaderProps {
+  currentStatus: OrderStatus;
+  onStatusChange: (status: OrderStatus) => void;
+  notifyEnabled: boolean;
+  notificationEmail: string;
+  onNotificationChange: (notifyEnabled: boolean, email: string) => void;
+}
