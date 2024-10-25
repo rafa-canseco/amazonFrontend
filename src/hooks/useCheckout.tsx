@@ -33,23 +33,39 @@ export function useCheckout() {
   );
   const [isLoadingAave, setIsLoadingAave] = useState(false);
 
-  const { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD } =
-    useMemo(() => {
-      const subtotalMXN =
-        cart?.items.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0,
-        ) || 0;
-      const feeMXN = subtotalMXN * 0.03;
-      const totalMXN = subtotalMXN + feeMXN;
+  const {
+    subtotalMXN,
+    feeMXN,
+    totalMXN,
+    subtotalUSD,
+    feeUSD,
+    totalUSD,
+    shippingFeeUSD,
+  } = useMemo(() => {
+    const subtotalMXN =
+      cart?.items.reduce((sum, item) => sum + item.price * item.quantity, 0) ||
+      0;
+    const feeMXN = subtotalMXN * 0.03;
+    const shippingFeeUSD =
+      cart?.items.reduce((sum, item) => sum + (item.shipping_fee || 0), 0) || 0;
 
-      const exchangeRateValue = exchangeRate?.valor || 1;
-      const subtotalUSD = subtotalMXN / exchangeRateValue;
-      const feeUSD = feeMXN / exchangeRateValue;
-      const totalUSD = totalMXN / exchangeRateValue;
+    const exchangeRateValue = exchangeRate?.valor || 1;
+    const subtotalUSD = subtotalMXN / exchangeRateValue;
+    const feeUSD = feeMXN / exchangeRateValue;
+    const shippingFeeMXN = shippingFeeUSD * exchangeRateValue;
+    const totalMXN = subtotalMXN + feeMXN + shippingFeeMXN;
+    const totalUSD = subtotalUSD + feeUSD + shippingFeeUSD;
 
-      return { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD };
-    }, [cart, exchangeRate]);
+    return {
+      subtotalMXN,
+      feeMXN,
+      totalMXN,
+      subtotalUSD,
+      feeUSD,
+      totalUSD,
+      shippingFeeUSD,
+    };
+  }, [cart, exchangeRate]);
 
   const handlePayWithAave = async () => {
     if (!userData || !wallets[0]) return;
@@ -216,5 +232,7 @@ export function useCheckout() {
     handlePayWithAave,
     handleConfirmAavePayment,
     handleSubmit,
+    shippingFeeUSD,
+    exchangeRate,
   };
 }

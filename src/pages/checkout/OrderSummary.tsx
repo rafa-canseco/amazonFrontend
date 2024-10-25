@@ -9,6 +9,8 @@ interface OrderSummaryProps {
   subtotalUSD: number;
   feeUSD: number;
   totalUSD: number;
+  shippingFeeUSD: number;
+  exchangeRate: { valor: number } | null | undefined;
 }
 
 export const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -19,6 +21,8 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
   subtotalUSD,
   feeUSD,
   totalUSD,
+  shippingFeeUSD,
+  exchangeRate,
 }) => {
   return (
     <div>
@@ -38,6 +42,11 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                 Price: ${item.price.toFixed(2)} MXN ($
                 {(item.price / (totalMXN / totalUSD)).toFixed(2)} USD)
               </p>
+              {item.shipping_fee > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Shipping: ${item.shipping_fee.toFixed(2)} USD
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -46,6 +55,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         <p>
           Subtotal: ${subtotalMXN.toFixed(2)} MXN (${subtotalUSD.toFixed(2)}{" "}
           USD)
+        </p>
+        <p>
+          Shipping: ${(shippingFeeUSD * (exchangeRate?.valor || 1)).toFixed(2)}{" "}
+          MXN (${shippingFeeUSD.toFixed(2)} USD)
         </p>
         <p>
           Fee (3%): ${feeMXN.toFixed(2)} MXN (${feeUSD.toFixed(2)} USD)
