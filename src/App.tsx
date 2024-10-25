@@ -14,6 +14,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import OrderDetails from "./pages/OrderDetails";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/pages/AppSidebar";
+import { DriftProvider } from "@buildersgarden/drift";
+import { DRIFT_APP_ID,DRIFT_APP_SECRET,DECENT_API_KEY } from "./config/contractConfig";
 
 const queryClient = new QueryClient();
 
@@ -22,33 +24,39 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <UserProvider>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <Router>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route
-                path="/*"
-                element={
-                  <SidebarProvider>
-                    <>
-                      <AppSidebar />
-                      <main>
-                        <SidebarTrigger />
-                        <Routes>
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/product/:asin" element={<ProductDetail />} />
-                          <Route path="/checkout" element={<Checkout />} />
-                          <Route path="/my-orders" element={<MyOrders />} />
-                          <Route path="/admin" element={<AdminDashboard />} />
-                          <Route path="/admin/order/:orderId" element={<OrderDetails />} />
-                        </Routes>
-                      </main>
-                    </>
-                  </SidebarProvider>
-                }
-              />
-            </Routes>
-            <Toaster />
-          </Router>
+          <DriftProvider
+            appId={DRIFT_APP_ID}
+            appSecret={DRIFT_APP_SECRET}
+            decentApiKey={DECENT_API_KEY}
+          >
+            <Router>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route
+                  path="/*"
+                  element={
+                    <SidebarProvider>
+                      <>
+                        <AppSidebar />
+                        <main>
+                          <SidebarTrigger />
+                          <Routes>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/product/:asin" element={<ProductDetail />} />
+                            <Route path="/checkout" element={<Checkout />} />
+                            <Route path="/my-orders" element={<MyOrders />} />
+                            <Route path="/admin" element={<AdminDashboard />} />
+                            <Route path="/admin/order/:orderId" element={<OrderDetails />} />
+                          </Routes>
+                        </main>
+                      </>
+                    </SidebarProvider>
+                  }
+                />
+              </Routes>
+              <Toaster />
+            </Router>
+          </DriftProvider>
         </ThemeProvider>
       </UserProvider>
       <ReactQueryDevtools initialIsOpen={false} />

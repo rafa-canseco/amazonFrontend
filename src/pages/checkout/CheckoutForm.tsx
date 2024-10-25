@@ -3,6 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { DriftPay } from "@buildersgarden/drift";
+import { base } from "viem/chains";
+import { ConnectedWallet } from "@privy-io/react-auth";
+import { useWalletClient } from "wagmi";
 
 interface CheckoutFormProps {
   fullName: string;
@@ -21,6 +25,7 @@ interface CheckoutFormProps {
   isLoadingAave: boolean;
   handleConfirmAavePayment: (e: React.MouseEvent) => void;
   showAavePaymentButton: boolean;
+  wallet: ConnectedWallet;
 }
 
 export const CheckoutForm: React.FC<CheckoutFormProps> = ({
@@ -40,7 +45,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
   isLoadingAave,
   handleConfirmAavePayment,
   showAavePaymentButton,
+  wallet,
 }) => {
+  const { data: walletClient } = useWalletClient();
   return (
     <form onSubmit={onSubmit} className="space-y-6 w-full max-w-md">
       <Input
@@ -118,6 +125,17 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
               "Ok! Pay with my credit on Aave"
             )}
           </Button>
+        )}
+        {walletClient && (
+          <DriftPay 
+            walletClient={walletClient}
+            paymentDetails={{
+              amount: 10,
+              destinationTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              destinationTokenChainId: base.id,
+              recipientAddress: wallet.address as `0x${string}`,
+            }} 
+          />
         )}
       </div>
     </form>

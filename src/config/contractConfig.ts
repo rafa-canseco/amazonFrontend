@@ -46,3 +46,7 @@ export const POOL_ADDRESSES_PROVIDER = getEnvValue(
   import.meta.env.VITE_DEV_POOL_ADDRESSES_PROVIDER,
   import.meta.env.VITE_PROD_POOL_ADDRESSES_PROVIDER,
 );
+
+export const DRIFT_APP_ID = import.meta.env.VITE_DRIFT_APP_ID as string;
+export const DRIFT_APP_SECRET = import.meta.env.VITE_DRIFT_APP_SECRET as string;
+export const DECENT_API_KEY = import.meta.env.VITE_DECENT_API_KEY as string;

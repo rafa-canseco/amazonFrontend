@@ -7,6 +7,9 @@ import { CreateOrderRequest } from "../types/types";
 import { CheckoutForm } from "./checkout/CheckoutForm";
 import { OrderSummary } from "./checkout/OrderSummary";
 import { AaveBorrowingInfo } from "./checkout/AaveBorrowingInfo";
+import { useWallets } from '@privy-io/react-auth';
+
+
 
 export default function Checkout() {
   const { userData, authStatus } = useUser();
@@ -37,6 +40,8 @@ export default function Checkout() {
     handleConfirmAavePayment,
     handleSubmit,
   } = useCheckout();
+  const { wallets, ready } = useWallets();
+  const activeWallet = wallets[0];
 
   if (authStatus === "loading") {
     return <div>Loading...</div>;
@@ -99,6 +104,7 @@ export default function Checkout() {
                 handlePayWithAave={handlePayWithAave}
                 isLoadingAave={isLoadingAave}
                 handleConfirmAavePayment={handleConfirmAavePayment}
+                  wallet={activeWallet}
                 showAavePaymentButton={
                   borrowCapacity !== null &&
                   borrowCapacity.maxBorrowAmount > totalUSD
