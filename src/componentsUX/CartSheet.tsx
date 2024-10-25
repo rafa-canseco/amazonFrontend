@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {  Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 import { useCart, useRemoveFromCart } from "../hooks";
 import { useExchangeRate } from "../hooks/useExchangeRate";
@@ -30,40 +30,53 @@ function CartSheet({ children }: CartSheetProps) {
   const { data: exchangeRate, isLoading: isLoadingExchangeRate } =
     useExchangeRate();
 
-  const { subtotalMXN, feeMXN, totalMXN, subtotalUSD, feeUSD, totalUSD } =
-    useMemo(() => {
-      if (!cart || !cart.items || !exchangeRate) {
-        return {
-          subtotalMXN: 0,
-          feeMXN: 0,
-          totalMXN: 0,
-          subtotalUSD: 0,
-          feeUSD: 0,
-          totalUSD: 0,
-        };
-      }
-
-      const subtotalMXN = cart.items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0,
-      );
-      const feeMXN = subtotalMXN * 0.03; // 3% fee
-      const totalMXN = subtotalMXN + feeMXN;
-
-      const exchangeRateValue = exchangeRate.valor || 1;
-      const subtotalUSD = subtotalMXN / exchangeRateValue;
-      const feeUSD = feeMXN / exchangeRateValue;
-      const totalUSD = totalMXN / exchangeRateValue;
-
+  const {
+    subtotalMXN,
+    feeMXN,
+    totalMXN,
+    subtotalUSD,
+    feeUSD,
+    totalUSD,
+    shippingFeeUSD,
+  } = useMemo(() => {
+    if (!cart || !cart.items || !exchangeRate) {
       return {
-        subtotalMXN,
-        feeMXN,
-        totalMXN,
-        subtotalUSD,
-        feeUSD,
-        totalUSD,
+        subtotalMXN: 0,
+        feeMXN: 0,
+        totalMXN: 0,
+        subtotalUSD: 0,
+        feeUSD: 0,
+        totalUSD: 0,
+        shippingFeeUSD: 0,
       };
-    }, [cart, exchangeRate]);
+    }
+
+    const subtotalMXN = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+    const feeMXN = subtotalMXN * 0.03;
+    const shippingFeeUSD = cart.items.reduce(
+      (sum, item) => sum + (item.shipping_fee || 0),
+      0,
+    );
+    const exchangeRateValue = exchangeRate.valor || 1;
+    const subtotalUSD = subtotalMXN / exchangeRateValue;
+    const feeUSD = feeMXN / exchangeRateValue;
+    const shippingFeeMXN = shippingFeeUSD * exchangeRateValue;
+    const totalMXN = subtotalMXN + feeMXN + shippingFeeMXN;
+    const totalUSD = subtotalUSD + feeUSD + shippingFeeUSD;
+
+    return {
+      subtotalMXN,
+      feeMXN,
+      totalMXN,
+      subtotalUSD,
+      feeUSD,
+      totalUSD,
+      shippingFeeUSD,
+    };
+  }, [cart, exchangeRate]);
 
   const handleRemoveFromCart = async (asin: string) => {
     if (!userData) return;
@@ -140,6 +153,11 @@ function CartSheet({ children }: CartSheetProps) {
                       USD)
                     </span>
                   </p>
+                  {item.shipping_fee !== undefined && item.shipping_fee > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Shipping: ${item.shipping_fee.toFixed(2)} USD
+                    </p>
+                  )}
                 </div>
                 <Button
                   size="sm"
@@ -171,6 +189,13 @@ function CartSheet({ children }: CartSheetProps) {
                   <span>
                     ${subtotalMXN.toFixed(2)} MXN (${subtotalUSD.toFixed(2)}{" "}
                     USD)
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Shipping:</span>
+                  <span>
+                    ${(shippingFeeUSD * (exchangeRate?.valor || 1)).toFixed(2)}{" "}
+                    MXN (${shippingFeeUSD.toFixed(2)} USD)
                   </span>
                 </div>
                 <div className="flex justify-between items-center">

@@ -44,6 +44,8 @@ export interface ProductDetail {
   availability?: {
     status: string;
   };
+  category?: string;
+  specifications?: Array<Record<string, string>>;
 }
 
 export interface ProductDetailResponse {
@@ -77,6 +79,9 @@ export interface CartItem {
   product_link: string;
   variant_asin?: string;
   variant_dimensions?: { [key: string]: string };
+  category?: string;
+  specifications?: Array<Record<string, string>>;
+  shipping_fee?: number;
 }
 
 export interface Cart {

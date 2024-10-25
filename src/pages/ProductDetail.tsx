@@ -130,6 +130,8 @@ export default function ProductDetailPage() {
               {} as { [key: string]: string },
             )
           : undefined,
+        category: productResponse.product.category,
+        specifications: productResponse.product.specifications,
       };
 
       addToCartMutation.mutate(
@@ -161,134 +163,138 @@ export default function ProductDetailPage() {
 
   return (
     <div>
-    <div className="sm:ml-14">
-      <div>
-        <h1 className="text-2xl font-bold mb-4 ">{product.title}</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ">
-          <div>
-            {product.images && product.images.length > 0 && (
-              <div className="mb-4">
-                <img
-                  src={product.images[activeImage]}
-                  alt={`${product.title} - Main`}
-                  className="w-full h-auto rounded-lg shadow-lg mx-auto"
-                />
-              </div>
-            )}
-            {product.images && product.images.length > 1 && (
-              <Carousel className="w-full max-w-xs mx-auto">
-                <CarouselContent className="-ml-2">
-                  {product.images.map((image, index) => (
-                    <CarouselItem key={index} className="pl-2 basis-1/3">
-                      <div className="p-1">
-                        <Card>
-                          <CardContent className="flex aspect-square items-center justify-center p-2">
-                            <img
-                              src={image}
-                              alt={`${product.title} - ${index + 1}`}
-                              className={cn(
-                                "h-full w-full object-cover transition-all hover:scale-105 cursor-pointer",
-                                activeImage === index
-                                  ? "ring-2 ring-primary"
-                                  : "",
-                              )}
-                              onClick={() => setActiveImage(index)}
-                            />
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            )}
-          </div>
-          <div>
-            <p className="text-xl font-semibold mb-2">
-              {isPriceLoading
-                ? "Loading price..."
-                : variantPrice
-                ? `$${variantPrice.toFixed(2)}`
-                : productResponse?.product?.price?.raw}
-            </p>
-            {product.rating && (
-              <p className="mb-2">
-                Rating: {product.rating}/5 ({product.ratings_total} reviews)
+      <div className="sm:ml-14">
+        <div>
+          <h1 className="text-2xl font-bold mb-4 ">{product.title}</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ">
+            <div>
+              {product.images && product.images.length > 0 && (
+                <div className="mb-4">
+                  <img
+                    src={product.images[activeImage]}
+                    alt={`${product.title} - Main`}
+                    className="w-full h-auto rounded-lg shadow-lg mx-auto"
+                  />
+                </div>
+              )}
+              {product.images && product.images.length > 1 && (
+                <Carousel className="w-full max-w-xs mx-auto">
+                  <CarouselContent className="-ml-2">
+                    {product.images.map((image, index) => (
+                      <CarouselItem key={index} className="pl-2 basis-1/3">
+                        <div className="p-1">
+                          <Card>
+                            <CardContent className="flex aspect-square items-center justify-center p-2">
+                              <img
+                                src={image}
+                                alt={`${product.title} - ${index + 1}`}
+                                className={cn(
+                                  "h-full w-full object-cover transition-all hover:scale-105 cursor-pointer",
+                                  activeImage === index
+                                    ? "ring-2 ring-primary"
+                                    : "",
+                                )}
+                                onClick={() => setActiveImage(index)}
+                              />
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              )}
+            </div>
+            <div>
+              <p className="text-xl font-semibold mb-2">
+                {isPriceLoading
+                  ? "Loading price..."
+                  : variantPrice
+                    ? `$${variantPrice.toFixed(2)}`
+                    : productResponse?.product?.price?.raw}
               </p>
-            )}
-            {product.brand && <p className="mb-2">Brand: {product.brand}</p>}
-            {Object.entries(dimensions).map(([dimensionName, values]) => (
-              <div key={dimensionName} className="mb-4">
-                <Select
-                  onValueChange={(value) =>
-                    handleDimensionChange(dimensionName, value)
+              {product.rating && (
+                <p className="mb-2">
+                  Rating: {product.rating}/5 ({product.ratings_total} reviews)
+                </p>
+              )}
+              {product.brand && <p className="mb-2">Brand: {product.brand}</p>}
+              {Object.entries(dimensions).map(([dimensionName, values]) => (
+                <div key={dimensionName} className="mb-4">
+                  <Select
+                    onValueChange={(value) =>
+                      handleDimensionChange(dimensionName, value)
+                    }
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder={`Select ${dimensionName}`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {values.map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {value}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+              {selectedVariant?.availability && (
+                <p className="mb-2">
+                  Availability: {selectedVariant.availability.status}
+                </p>
+              )}
+              {product.feature_bullets && (
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold mb-2">Features:</h2>
+                  <ul className="list-disc pl-5">
+                    {product.feature_bullets.map((bullet, index) => (
+                      <li key={index}>{bullet}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {product.description && (
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold mb-2">Description:</h2>
+                  <p>{product.description}</p>
+                </div>
+              )}
+              <div className="flex space-x-2">
+                <Button
+                  onClick={handleAddToCart}
+                  className="mt-4"
+                  disabled={
+                    addToCartMutation.isPending ||
+                    ((productResponse?.product?.variants?.length ?? 0) > 0 &&
+                      !selectedVariant)
                   }
                 >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder={`Select ${dimensionName}`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {values.map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {addToCartMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Adding to Cart...
+                    </>
+                  ) : (
+                    "Add to Cart"
+                  )}
+                </Button>
+                <Button asChild variant="outline" className="mt-4">
+                  <a
+                    href={selectedVariant?.link || product.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View on Amazon
+                  </a>
+                </Button>
               </div>
-            ))}
-            {selectedVariant?.availability && (
-              <p className="mb-2">
-                Availability: {selectedVariant.availability.status}
-              </p>
-            )}
-            {product.feature_bullets && (
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold mb-2">Features:</h2>
-                <ul className="list-disc pl-5">
-                  {product.feature_bullets.map((bullet, index) => (
-                    <li key={index}>{bullet}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {product.description && (
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold mb-2">Description:</h2>
-                <p>{product.description}</p>
-              </div>
-            )}
-            <div className="flex space-x-2">
-              <Button
-                onClick={handleAddToCart}
-                className="mt-4"
-                disabled={addToCartMutation.isPending || !selectedVariant}
-              >
-                {addToCartMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Adding to Cart...
-                  </>
-                ) : (
-                  "Add to Cart"
-                )}
-              </Button>
-              <Button asChild variant="outline" className="mt-4">
-                <a
-                  href={selectedVariant?.link || product.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View on Amazon
-                </a>
-              </Button>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

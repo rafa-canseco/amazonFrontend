@@ -36,6 +36,8 @@ export default function Checkout() {
     handlePayWithAave,
     handleConfirmAavePayment,
     handleSubmit,
+    shippingFeeUSD,
+    exchangeRate,
   } = useCheckout();
 
   if (authStatus === "loading") {
@@ -114,6 +116,8 @@ export default function Checkout() {
                 subtotalUSD={subtotalUSD}
                 feeUSD={feeUSD}
                 totalUSD={totalUSD}
+                shippingFeeUSD={shippingFeeUSD}
+                exchangeRate={exchangeRate}
               />
               <AaveBorrowingInfo borrowCapacity={borrowCapacity} />
             </div>
