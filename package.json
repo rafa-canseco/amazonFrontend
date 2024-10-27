@@ -14,7 +14,7 @@
     "@aave/contract-helpers": "^1.30.3",
     "@aave/math-utils": "^1.30.3",
     "@bgd-labs/aave-address-book": "^4.1.0",
-    "@buildersgarden/drift": "^0.0.15",
+    "@buildersgarden/drift": "^0.0.18",
     "@hookform/resolvers": "^3.9.0",
     "@privy-io/react-auth": "^1.92.2",
     "@privy-io/wagmi": "^0.2.12",

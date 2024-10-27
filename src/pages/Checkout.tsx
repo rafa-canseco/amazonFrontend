@@ -10,7 +10,6 @@ import { AaveBorrowingInfo } from "./checkout/AaveBorrowingInfo";
 import { useWallets } from '@privy-io/react-auth';
 
 
-
 export default function Checkout() {
   const { userData, authStatus } = useUser();
   const {

@@ -6,9 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      'solar-icon-set/money': path.resolve(__dirname, 'node_modules/solar-icon-set/dist/icons/Money'),
-      'solar-icon-set/arrows': path.resolve(__dirname, 'node_modules/solar-icon-set/dist/icons/Arrows')
+      '@': path.resolve(__dirname, './src')
     }
   },
   define: {
